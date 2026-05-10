@@ -1,0 +1,186 @@
+.bitacora-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.bitacora-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.bitacora-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+}
+
+.bitacora-subtitle {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.bitacora-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.bitacora-search {
+  max-width: 100%;
+}
+
+.bitacora-filter {
+  max-width: 190px;
+}
+
+.bitacora-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.bitacora-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.bitacora-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 30px;
+}
+
+.bitacora-id,
+.bitacora-user {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.bitacora-user-empty {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.bitacora-role {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  color: #a16207;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.bitacora-role-empty {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.bitacora-action,
+.bitacora-method {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.bitacora-action-entrada {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.bitacora-action-salida {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.bitacora-action-accion {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.bitacora-description {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 6px;
+  max-width: 360px;
+}
+
+.bitacora-method {
+  background: #f1f5f9;
+  color: #475569;
+  min-width: 54px;
+}
+
+.bitacora-method-get {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.bitacora-method-post {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.bitacora-method-put,
+.bitacora-method-patch {
+  background: #fef3c7;
+  color: #a16207;
+}
+
+.bitacora-method-delete {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.bitacora-route {
+  max-width: 280px;
+  color: #475569;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.bitacora-date {
+  white-space: nowrap;
+  color: #475569;
+}
+
+@media (max-width: 1100px) {
+  .bitacora-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .bitacora-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .bitacora-toolbar,
+  .bitacora-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bitacora-filter {
+    max-width: none;
+  }
+}

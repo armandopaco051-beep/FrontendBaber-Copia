@@ -4,6 +4,8 @@ import api from '../api/axiosConfig';
 
 const AuthContext = createContext(null);
 
+// Lee el JWT guardado, valida su expiracion y arma el objeto usuario
+// que usa el panel para mostrar nombre, rol y permitir rutas privadas.
 function getUsuarioFromToken(token) {
   if (!token) return null;
 
@@ -31,10 +33,13 @@ function getStoredUsuario() {
   return getUsuarioFromToken(localStorage.getItem('access_token'));
 }
 
+// AuthProvider centraliza sesion: login, logout y usuario actual.
+// Todos los componentes lo consumen mediante useAuth().
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(getStoredUsuario);
   const cargando = false;
 
+  // POST seguridad/login/: autentica correo/contrasena y guarda access/refresh.
   const login = async (correo, password) => {
     const res = await api.post('seguridad/login/', { correo, password });
     const { access, refresh, usuario } = res.data;
@@ -46,6 +51,7 @@ export function AuthProvider({ children }) {
     return u;
   };
 
+  // POST seguridad/logout/: invalida refresh en backend y limpia sesion local.
   const logout = async () => {
     try {
       const refresh = localStorage.getItem('refresh_token');

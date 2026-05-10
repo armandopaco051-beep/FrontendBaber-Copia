@@ -1,5 +1,6 @@
 import {useNavigate, useLocation, Outlet} from 'react-router-dom';
 import {useAuth} from '../../auth/authContext';
+import {useState} from 'react';
 
 const NAV = [
   { section: 'PRINCIPAL', items: [
@@ -27,6 +28,7 @@ const NAV = [
     { id: 'reportes',   label: 'Reportes',       icon: '📈', path: '/admin/reportes' },
   ]},
   { section: 'SISTEMA', items: [
+    { id: 'bitacora',   label: 'Bitacora',       icon: 'BI', path: '/admin/bitacora' },
     { id: 'perfil',     label: 'Perfil',         icon: '👤', path: '/admin/perfil' },
   ]},
 ];
@@ -47,27 +49,41 @@ const PAGE_INFO = {
   inventario: { title: 'Inventario',            sub: 'Control de productos y stock' },
   notificaciones:{ title: 'Notificaciones',     sub: 'Alertas y mensajes del sistema' },
   reportes:   { title: 'Reportes',              sub: 'Análisis y estadísticas' },
+  bitacora:   { title: 'Bitacora',              sub: 'Control de entradas, salidas y acciones del sistema' },
   perfil:     { title: 'Perfil',                sub: 'Datos de la cuenta administradora' },
 };
  
+// AdminLayout arma la estructura del panel privado:
+// menu lateral, topbar, cierre de sesion y Outlet para pintar cada modulo hijo.
 export default function AdminLayout() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(() => localStorage.getItem('admin_sidebar_open') !== 'false');
  
   // Obtener el ID de la ruta actual
   const currentId = location.pathname.split('/admin/')[1] || 'dashboard';
   const info      = PAGE_INFO[currentId] || { title: 'Panel', sub: '' };
  
+  // Cierra sesion usando AuthContext y redirige a la landing.
   const handleLogout = async () => {
     await logout();
     navigate('/');
   };
+
+  // Abre/cierra la barra lateral y guarda la preferencia local.
+  const toggleSidebar = () => {
+    setSidebarOpen(prev => {
+      const next = !prev;
+      localStorage.setItem('admin_sidebar_open', String(next));
+      return next;
+    });
+  };
  
   return (
-    <div className="admin-wrapper">
+    <div className={`admin-wrapper ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       {/* ── Sidebar ── */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? 'is-open' : 'is-hidden'}`}>
         <div className="sidebar-logo">
           <h2>Blessed Barber</h2>
           <span>Club Admin</span>
@@ -105,8 +121,19 @@ export default function AdminLayout() {
         {/* Topbar */}
         <div className="topbar">
           <div className="topbar-left">
-            <h1>{info.title}</h1>
-            <p>{info.sub}</p>
+            <button
+              className="sidebar-toggle"
+              type="button"
+              onClick={toggleSidebar}
+              aria-label={sidebarOpen ? 'Ocultar menu' : 'Mostrar menu'}
+              title={sidebarOpen ? 'Ocultar menu' : 'Mostrar menu'}
+            >
+              <span>{sidebarOpen ? '×' : '☰'}</span>
+            </button>
+            <div>
+              <h1>{info.title}</h1>
+              <p>{info.sub}</p>
+            </div>
           </div>
           <div className="topbar-right">
             <div style={{ position: 'relative' }}>

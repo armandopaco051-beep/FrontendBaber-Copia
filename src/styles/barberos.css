@@ -1,0 +1,82 @@
+.barberos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.barberos-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+}
+
+.barberos-subtitle {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.barberos-search {
+  margin-bottom: 20px;
+  max-width: 100%;
+}
+
+.barberos-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 30px;
+}
+
+.barberos-name {
+  font-weight: 700;
+}
+
+.barberos-muted {
+  color: #64748b;
+}
+
+.barberos-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.barberos-delete {
+  color: #ef4444;
+  border-color: #fecaca;
+}
+
+.barberos-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.barberos-modal-button {
+  flex: 1;
+}
+
+.barberos-detail-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.barberos-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.barberos-detail-label {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.barberos-detail-value {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.barberos-close-button {
+  width: 100%;
+  margin-top: 16px;
+}

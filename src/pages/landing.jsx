@@ -1,15 +1,69 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
+import api from '../api/axiosConfig';
 
+const PASSWORD_ENDPOINTS = {
+  solicitar: 'seguridad/password/solicitar-codigo/',
+  validar: 'seguridad/password/validar-codigo/',
+  restablecer: 'seguridad/password/restablecer/',
+};
+
+const SERVICES = [
+  { icon: '✂', title: 'Corte de cabello', desc: 'Cortes modernos, asesoramiento y acabado personalizado segun rostro y estilo.' },
+  { icon: 'B', title: 'Corte + barba', desc: 'Servicio completo para cabello y barba, ideal para una renovacion total.' },
+  { icon: '*', title: 'Perfilado de cejas', desc: 'Detalle adicional para mejorar la presentacion final del cliente.' },
+  { icon: 'C', title: 'Color y ondulacion', desc: 'Servicios proyectados para ampliar la oferta de Blessed Barber Club.' },
+];
+
+const STEPS = [
+  { n: '1', title: 'Registrate', desc: 'El usuario publico se registra unicamente como cliente con sus datos basicos.' },
+  { n: '2', title: 'Elige servicio', desc: 'Selecciona corte, barba, perfilado u otro servicio disponible en la barberia.' },
+  { n: '3', title: 'Reserva horario', desc: 'Consulta espacios libres y confirma la atencion con el barbero disponible.' },
+];
+
+const FEATURES = [
+  'Atencion por reserva y horarios disponibles',
+  'Historial de servicios para clientes registrados',
+  'Notificaciones para cambios o reprogramaciones',
+  'Panel administrativo para controlar la operacion',
+];
+
+// Normaliza errores de login, registro y recuperacion para mostrarlos al usuario.
+function formatApiError(data, fallback = 'Ocurrio un error. Intenta nuevamente.') {
+  if (!data) return fallback;
+  if (typeof data === 'string') return data;
+  if (data.error) return data.error;
+  if (data.detail) return data.detail;
+  if (data.message) return data.message;
+
+  const message = Object.entries(data)
+    .map(([field, value]) => `${field}: ${Array.isArray(value) ? value.join(', ') : value}`)
+    .join(' | ');
+
+  return message || fallback;
+}
+
+// Landing publica.
+// Contiene tres flujos: iniciar sesion, registrar cliente publico y recuperar contrasena.
 export default function Landing() {
-  const [tab, setTab]         = useState('login');
+  const [tab, setTab] = useState('login');
   const [loginData, setLogin] = useState({ correo: '', password: '' });
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registerData, setRegisterData] = useState({ nombre: '', apellido: '', telefono: '', codigo: '', correo: '', password: '', confirmar: '' });
+  const [registerError, setRegisterError] = useState('');
+  const [registerMsg, setRegisterMsg] = useState('');
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [recoverStep, setRecoverStep] = useState('correo');
+  const [recoverData, setRecoverData] = useState({ correo: '', codigo: '', password: '', confirmar: '' });
+  const [recoverError, setRecoverError] = useState('');
+  const [recoverMsg, setRecoverMsg] = useState('');
+  const [recoverLoading, setRecoverLoading] = useState(false);
   const { login } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
+  // Login: usa AuthContext, guarda JWT y redirige al panel.
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -19,185 +73,302 @@ export default function Landing() {
       if (u.rol === 'Administrador' || u.rol === 'Barbero') {
         navigate('/admin/dashboard');
       } else {
-        navigate('/admin/dashboard'); // futuro: panel cliente
+        navigate('/admin/dashboard');
       }
-    } catch {
-      setError('Código o contraseña incorrectos.');
+    } catch (e) {
+      setError(formatApiError(e.response?.data, 'Correo electronico o contrasena incorrectos.'));
     } finally {
       setLoading(false);
     }
   };
 
+  const updateRegister = (field, value) => {
+    setRegisterData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Registro publico: crea usuario cliente en seguridad/registro-cliente/.
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setRegisterError('');
+    setRegisterMsg('');
+
+    if (registerData.password !== registerData.confirmar) {
+      setRegisterError('Las contrasenas no coinciden.');
+      return;
+    }
+
+    setRegisterLoading(true);
+    try {
+      const res = await api.post('seguridad/registro-cliente/', {
+        codigo: registerData.codigo,
+        nombre: registerData.nombre,
+        apellido: registerData.apellido,
+        telefono: registerData.telefono,
+        correo: registerData.correo,
+        password: registerData.password,
+      });
+      setRegisterMsg(res.data?.mensaje || 'Cliente registrado correctamente. Ya puedes iniciar sesion.');
+      setLogin({ correo: registerData.correo, password: '' });
+      setRegisterData({ nombre: '', apellido: '', telefono: '', codigo: '', correo: '', password: '', confirmar: '' });
+      setTab('login');
+    } catch (err) {
+      setRegisterError(formatApiError(err.response?.data, 'No se pudo crear la cuenta cliente.'));
+    } finally {
+      setRegisterLoading(false);
+    }
+  };
+
+  const updateRecover = (field, value) => {
+    setRecoverData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Recuperacion paso 1: solicita codigo temporal al correo.
+  const requestResetCode = async (e) => {
+    e.preventDefault();
+    setRecoverError('');
+    setRecoverMsg('');
+    setRecoverLoading(true);
+    try {
+      const res = await api.post(PASSWORD_ENDPOINTS.solicitar, { correo: recoverData.correo });
+      setRecoverMsg(res.data?.message || res.data?.detail || 'Codigo temporal enviado. Revisa tu correo.');
+      setRecoverStep('codigo');
+    } catch (err) {
+      setRecoverError(formatApiError(err.response?.data, 'No se pudo enviar el codigo temporal.'));
+    } finally {
+      setRecoverLoading(false);
+    }
+  };
+
+  // Recuperacion paso 2: valida codigo temporal.
+  const validateResetCode = async (e) => {
+    e.preventDefault();
+    setRecoverError('');
+    setRecoverMsg('');
+    setRecoverLoading(true);
+    try {
+      const res = await api.post(PASSWORD_ENDPOINTS.validar, {
+        correo: recoverData.correo,
+        codigo: recoverData.codigo,
+      });
+      setRecoverMsg(res.data?.message || res.data?.detail || 'Codigo validado. Ingresa tu nueva contrasena.');
+      setRecoverStep('password');
+    } catch (err) {
+      setRecoverError(formatApiError(err.response?.data, 'Codigo invalido o vencido.'));
+    } finally {
+      setRecoverLoading(false);
+    }
+  };
+
+  // Recuperacion paso 3: guarda nueva contrasena en backend.
+  const resetPassword = async (e) => {
+    e.preventDefault();
+    setRecoverError('');
+    setRecoverMsg('');
+
+    if (recoverData.password !== recoverData.confirmar) {
+      setRecoverError('Las contrasenas no coinciden.');
+      return;
+    }
+
+    setRecoverLoading(true);
+    try {
+      const res = await api.post(PASSWORD_ENDPOINTS.restablecer, {
+        correo: recoverData.correo,
+        codigo: recoverData.codigo,
+        nueva_password: recoverData.password,
+        confirmar_password: recoverData.confirmar,
+      });
+      setRecoverMsg(res.data?.message || res.data?.detail || 'Contrasena restablecida correctamente.');
+      setLogin({ correo: recoverData.correo, password: '' });
+      setRecoverData({ correo: '', codigo: '', password: '', confirmar: '' });
+      setRecoverStep('correo');
+      setTab('login');
+    } catch (err) {
+      setRecoverError(formatApiError(err.response?.data, 'No se pudo restablecer la contrasena.'));
+    } finally {
+      setRecoverLoading(false);
+    }
+  };
+
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      {/* ── Navbar ── */}
-      <header style={{
-        width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 100,
-        background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-      }}>
-        <div style={{ maxWidth: 1200, margin: 'auto', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'white', fontWeight: 'bold', fontSize: 20, fontFamily: "'Sora',sans-serif" }}>
-            <div style={{ width: 42, height: 42, background: '#d4af37', color: '#0f172a', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>✂</div>
+    <div className="landing-page">
+      <header className="landing-header">
+        <div className="landing-nav-wrap">
+          <div className="landing-brand">
+            <div className="landing-brand-icon">✂</div>
             Blessed Barber Club
           </div>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 24, color: '#cbd5e1', fontSize: 14 }}>
-            <a href="#inicio" style={{ color: '#cbd5e1' }}>Inicio</a>
-            <a href="#servicios" style={{ color: '#cbd5e1' }}>Servicios</a>
-            <a href="#como-funciona" style={{ color: '#cbd5e1' }}>Reservas</a>
-            <a href="#barberia" style={{ color: '#cbd5e1' }}>Barbería</a>
-            <a href="#acceso" style={{ background: '#d4af37', color: '#0f172a', padding: '10px 16px', borderRadius: 14, fontWeight: 700 }}>Ingresar</a>
+          <nav className="landing-nav">
+            <a href="#inicio">Inicio</a>
+            <a href="#servicios">Servicios</a>
+            <a href="#como-funciona">Reservas</a>
+            <a href="#barberia">Barberia</a>
+            <a className="landing-nav-cta" href="#acceso">Ingresar</a>
           </nav>
         </div>
       </header>
 
-      {/* ── Hero ── */}
-      <section id="inicio" style={{
-        minHeight: '100vh', padding: '120px 24px 70px',
-        background: 'linear-gradient(90deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.82) 48%,rgba(15,23,42,.52) 100%), linear-gradient(135deg,#0f172a 0%,#1e293b 100%)',
-        color: 'white', display: 'flex', alignItems: 'center',
-      }}>
-        <div style={{ maxWidth: 1200, margin: 'auto', width: '100%', display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 42, alignItems: 'center' }}>
-          {/* Texto izquierda */}
+      <section id="inicio" className="landing-hero">
+        <div className="landing-hero-grid">
           <div>
-            <div style={{ display: 'inline-block', background: 'rgba(212,175,55,.16)', border: '1px solid rgba(212,175,55,.35)', color: '#d4af37', padding: '9px 14px', borderRadius: 999, fontSize: 14, fontWeight: 700, marginBottom: 20 }}>
-              Barbería premium en Santa Cruz
-            </div>
-            <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 58, lineHeight: 1.05, marginBottom: 20 }}>
-              Reserva tu cita en <span style={{ color: '#d4af37' }}>Blessed Barber Club</span>
+            <div className="landing-eyebrow">Barberia premium en Santa Cruz</div>
+            <h1 className="landing-hero-title">
+              Reserva tu cita en <span>Blessed Barber Club</span>
             </h1>
-            <p style={{ fontSize: 18, lineHeight: 1.7, color: '#cbd5e1', maxWidth: 650, marginBottom: 28 }}>
-              Agenda tu corte, barba o servicio de imagen de forma rápida. Consulta horarios disponibles,
-              elige tu servicio y mantén tu historial de atención como cliente registrado.
+            <p className="landing-hero-copy">
+              Agenda tu corte, barba o servicio de imagen de forma rapida. Consulta horarios disponibles,
+              elige tu servicio y manten tu historial de atencion como cliente registrado.
             </p>
-            <div style={{ display: 'flex', gap: 14 }}>
-              <a href="#acceso">
-                <button style={{ background: '#d4af37', color: '#0f172a', border: 'none', padding: '14px 20px', borderRadius: 16, fontWeight: 700, cursor: 'pointer', fontSize: 15, fontFamily: "'DM Sans',sans-serif" }}>
-                  Reservar ahora
-                </button>
-              </a>
-              <a href="#servicios">
-                <button style={{ background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.16)', color: 'white', padding: '14px 20px', borderRadius: 16, fontWeight: 700, cursor: 'pointer', fontSize: 15, fontFamily: "'DM Sans',sans-serif" }}>
-                  Ver servicios
-                </button>
-              </a>
+            <div className="landing-hero-actions">
+              <a href="#acceso"><button className="landing-btn landing-btn-gold">Reservar ahora</button></a>
+              <a href="#servicios"><button className="landing-btn landing-btn-dark">Ver servicios</button></a>
             </div>
           </div>
 
-          {/* Auth Card */}
-          <div id="acceso" style={{ background: 'rgba(255,255,255,.97)', color: '#0f172a', borderRadius: 28, padding: 28, boxShadow: '0 30px 80px rgba(0,0,0,.35)' }}>
-            {/* Tabs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, background: '#f1f5f9', padding: 6, borderRadius: 18, marginBottom: 22 }}>
-              {[['login','Ingresar'],['registro','Registrarme'],['recuperar','Olvidé']].map(([id,label]) => (
-                <button key={id} onClick={() => setTab(id)} style={{
-                  border: 'none', borderRadius: 14, padding: '11px 8px', fontWeight: 700, cursor: 'pointer',
-                  background: tab === id ? '#0f172a' : 'transparent',
-                  color: tab === id ? 'white' : '#64748b',
-                  fontFamily: "'DM Sans',sans-serif", fontSize: 13, transition: '.18s',
-                }}>
+          <div id="acceso" className="landing-auth-card">
+            <div className="landing-tabs">
+              {[['login', 'Ingresar'], ['registro', 'Registrarme'], ['recuperar', 'Olvide']].map(([id, label]) => (
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
+                  className={`landing-tab ${tab === id ? 'active' : ''}`}
+                  type="button"
+                >
                   {label}
                 </button>
               ))}
             </div>
 
-            {/* ── Login ── */}
             {tab === 'login' && (
               <form onSubmit={handleLogin}>
-                <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: 26, marginBottom: 6 }}>Iniciar sesión</h2>
-                <p style={{ color: '#64748b', fontSize: 14, marginBottom: 18 }}>Accede según tu rol: administrador, barbero o cliente.</p>
+                <h2 className="landing-form-title">Iniciar sesion</h2>
+                <p className="landing-form-copy">Accede segun tu rol: administrador, barbero o cliente.</p>
 
-                {error && <div style={{ background: '#fee2e2', color: '#b91c1c', padding: '10px 14px', borderRadius: 12, fontSize: 13, marginBottom: 14 }}>{error}</div>}
+                {error && <div className="landing-alert landing-alert-error">{error}</div>}
 
-                <div style={{ marginBottom: 15 }}>
-                  <label style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8, color: '#334155' }}>Correo electronico</label>
+                <div className="landing-field">
+                  <label>Correo electronico</label>
                   <input className="input-field" type="email" placeholder="Ej: nombre@gmail.com"
-                    value={loginData.correo} onChange={e => setLogin({...loginData, correo: e.target.value})} required />
+                    value={loginData.correo} onChange={e => setLogin({ ...loginData, correo: e.target.value })} required />
                 </div>
-                <div style={{ marginBottom: 15 }}>
-                  <label style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8, color: '#334155' }}>Contraseña</label>
-                  <input className="input-field" type="password" placeholder="Ingresa tu contraseña"
-                    value={loginData.password} onChange={e => setLogin({...loginData, password: e.target.value})} required />
+                <div className="landing-field">
+                  <label>Contrasena</label>
+                  <input className="input-field" type="password" placeholder="Ingresa tu contrasena"
+                    value={loginData.password} onChange={e => setLogin({ ...loginData, password: e.target.value })} required />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, fontSize: 14, color: '#64748b' }}>
-                  <span>¿Olvidaste tu contraseña?</span>
-                  <span onClick={() => setTab('recuperar')} style={{ color: '#c9a227', fontWeight: 700, cursor: 'pointer' }}>Recuperar</span>
+                <div className="landing-form-row">
+                  <span>Olvidaste tu contrasena?</span>
+                  <button type="button" onClick={() => setTab('recuperar')}>Recuperar</button>
                 </div>
-                <button type="submit" disabled={loading} style={{
-                  width: '100%', border: 'none', borderRadius: 16, padding: 14,
-                  background: loading ? '#e2c96a' : '#d4af37', color: '#0f172a',
-                  fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontSize: 15, fontFamily: "'DM Sans',sans-serif",
-                }}>
+                <button type="submit" disabled={loading} className="landing-submit">
                   {loading ? 'Ingresando...' : 'Ingresar al sistema'}
                 </button>
-                <p style={{ marginTop: 16, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
-                  ¿Sin cuenta?{' '}
-                  <span onClick={() => setTab('registro')} style={{ color: '#0f172a', fontWeight: 700, cursor: 'pointer' }}>Regístrate como cliente</span>
+                <p className="landing-switch">
+                  Sin cuenta?{' '}
+                  <button type="button" onClick={() => setTab('registro')}>Registrate como cliente</button>
                 </p>
               </form>
             )}
 
-            {/* ── Registro ── */}
             {tab === 'registro' && (
-              <form>
-                <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: 26, marginBottom: 6 }}>Crear cuenta cliente</h2>
-                <p style={{ color: '#64748b', fontSize: 14, marginBottom: 18 }}>El registro público es solo para clientes.</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 7, color: '#334155' }}>Nombre</label>
-                    <input className="input-field" type="text" placeholder="Tu nombre" />
+              <form onSubmit={handleRegister}>
+                <h2 className="landing-form-title">Crear cuenta cliente</h2>
+                <p className="landing-form-copy">El registro publico es solo para clientes.</p>
+                {registerError && <div className="landing-alert landing-alert-error">{registerError}</div>}
+                {registerMsg && <div className="landing-alert landing-alert-success">{registerMsg}</div>}
+
+                <div className="landing-two-cols">
+                  <div className="landing-field">
+                    <label>Nombre</label>
+                    <input className="input-field" type="text" placeholder="Tu nombre" value={registerData.nombre} onChange={e => updateRegister('nombre', e.target.value)} required />
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 7, color: '#334155' }}>Apellido</label>
-                    <input className="input-field" type="text" placeholder="Tu apellido" />
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 7, color: '#334155' }}>Teléfono</label>
-                    <input className="input-field" type="text" placeholder="70000000" />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 7, color: '#334155' }}>CI</label>
-                    <input className="input-field" type="text" placeholder="Carnet de identidad" />
+                  <div className="landing-field">
+                    <label>Apellido</label>
+                    <input className="input-field" type="text" placeholder="Tu apellido" value={registerData.apellido} onChange={e => updateRegister('apellido', e.target.value)} required />
                   </div>
                 </div>
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 7, color: '#334155' }}>Correo electrónico</label>
-                  <input className="input-field" type="email" placeholder="cliente@gmail.com" />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 7, color: '#334155' }}>Contraseña</label>
-                    <input className="input-field" type="password" placeholder="Crear contraseña" />
+                <div className="landing-two-cols">
+                  <div className="landing-field">
+                    <label>Telefono</label>
+                    <input className="input-field" type="text" placeholder="70000000" value={registerData.telefono} onChange={e => updateRegister('telefono', e.target.value)} required />
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 7, color: '#334155' }}>Confirmar</label>
-                    <input className="input-field" type="password" placeholder="Repetir contraseña" />
+                  <div className="landing-field">
+                    <label>CI</label>
+                    <input className="input-field" type="text" placeholder="Carnet de identidad" value={registerData.codigo} onChange={e => updateRegister('codigo', e.target.value)} required />
                   </div>
                 </div>
-                <button type="button" style={{ width: '100%', border: 'none', borderRadius: 16, padding: 14, background: '#d4af37', color: '#0f172a', fontWeight: 700, cursor: 'pointer', fontSize: 15, fontFamily: "'DM Sans',sans-serif" }}>
-                  Registrarme como cliente
+                <div className="landing-field">
+                  <label>Correo electronico</label>
+                  <input className="input-field" type="email" placeholder="cliente@gmail.com" value={registerData.correo} onChange={e => updateRegister('correo', e.target.value)} required />
+                </div>
+                <div className="landing-two-cols">
+                  <div className="landing-field">
+                    <label>Contrasena</label>
+                    <input className="input-field" type="password" placeholder="Crear contrasena" value={registerData.password} onChange={e => updateRegister('password', e.target.value)} required />
+                  </div>
+                  <div className="landing-field">
+                    <label>Confirmar</label>
+                    <input className="input-field" type="password" placeholder="Repetir contrasena" value={registerData.confirmar} onChange={e => updateRegister('confirmar', e.target.value)} required />
+                  </div>
+                </div>
+                <button type="submit" disabled={registerLoading} className="landing-submit">
+                  {registerLoading ? 'Registrando...' : 'Registrarme como cliente'}
                 </button>
-                <p style={{ marginTop: 14, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
-                  Tu cuenta tendrá el rol <strong style={{ color: '#0f172a' }}>Cliente</strong>.
+                <p className="landing-switch landing-role-note">
+                  Tu cuenta tendra el rol <strong>Cliente</strong>.
                 </p>
               </form>
             )}
 
-            {/* ── Recuperar ── */}
             {tab === 'recuperar' && (
-              <form>
-                <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: 26, marginBottom: 6 }}>Recuperar contraseña</h2>
-                <p style={{ color: '#64748b', fontSize: 14, marginBottom: 18 }}>Ingresa tu correo o teléfono. Te enviaremos instrucciones.</p>
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 7, color: '#334155' }}>Correo o teléfono</label>
-                  <input className="input-field" type="text" placeholder="cliente@gmail.com o 70000000" />
+              <form onSubmit={recoverStep === 'correo' ? requestResetCode : recoverStep === 'codigo' ? validateResetCode : resetPassword}>
+                <h2 className="landing-form-title">Recuperar contrasena</h2>
+                <p className="landing-form-copy">
+                  {recoverStep === 'correo' && 'Ingresa tu correo para recibir un codigo temporal.'}
+                  {recoverStep === 'codigo' && 'Escribe el codigo de 6 digitos que recibiste.'}
+                  {recoverStep === 'password' && 'Crea una nueva contrasena para tu cuenta.'}
+                </p>
+
+                {recoverError && <div className="landing-alert landing-alert-error">{recoverError}</div>}
+                {recoverMsg && <div className="landing-alert landing-alert-success">{recoverMsg}</div>}
+
+                <div className="landing-field">
+                  <label>Correo electronico</label>
+                  <input className="input-field" type="email" placeholder="cliente@gmail.com" value={recoverData.correo}
+                    onChange={e => updateRecover('correo', e.target.value)} disabled={recoverStep !== 'correo'} required />
                 </div>
-                <button type="button" style={{ width: '100%', border: 'none', borderRadius: 16, padding: 14, background: '#d4af37', color: '#0f172a', fontWeight: 700, cursor: 'pointer', fontSize: 15, fontFamily: "'DM Sans',sans-serif" }}>
-                  Enviar instrucciones
+
+                {recoverStep !== 'correo' && (
+                  <div className="landing-field">
+                    <label>Codigo temporal</label>
+                    <input className="input-field" type="text" inputMode="numeric" maxLength={6} placeholder="000000" value={recoverData.codigo}
+                      onChange={e => updateRecover('codigo', e.target.value.replace(/\D/g, '').slice(0, 6))} disabled={recoverStep === 'password'} required />
+                  </div>
+                )}
+
+                {recoverStep === 'password' && (
+                  <div className="landing-two-cols">
+                    <div className="landing-field">
+                      <label>Nueva contrasena</label>
+                      <input className="input-field" type="password" placeholder="Nueva contrasena" value={recoverData.password}
+                        onChange={e => updateRecover('password', e.target.value)} required />
+                    </div>
+                    <div className="landing-field">
+                      <label>Confirmar</label>
+                      <input className="input-field" type="password" placeholder="Repetir contrasena" value={recoverData.confirmar}
+                        onChange={e => updateRecover('confirmar', e.target.value)} required />
+                    </div>
+                  </div>
+                )}
+
+                <button type="submit" disabled={recoverLoading} className="landing-submit">
+                  {recoverLoading && 'Procesando...'}
+                  {!recoverLoading && recoverStep === 'correo' && 'Enviar codigo'}
+                  {!recoverLoading && recoverStep === 'codigo' && 'Validar codigo'}
+                  {!recoverLoading && recoverStep === 'password' && 'Restablecer contrasena'}
                 </button>
-                <p style={{ marginTop: 14, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
-                  <span onClick={() => setTab('login')} style={{ color: '#0f172a', fontWeight: 700, cursor: 'pointer' }}>Volver al login</span>
+                <p className="landing-switch">
+                  <button type="button" onClick={() => setTab('login')}>Volver al login</button>
                 </p>
               </form>
             )}
@@ -205,75 +376,60 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Servicios ── */}
-      <section id="servicios" style={{ padding: '80px 24px', background: 'white' }}>
-        <div style={{ maxWidth: 1200, margin: 'auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 42 }}>
-            <span style={{ color: '#c9a227', fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1 }}>Servicios</span>
-            <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: 38, marginTop: 10 }}>Todo para tu imagen personal</h2>
-            <p style={{ color: '#64748b', maxWidth: 700, margin: '12px auto 0', lineHeight: 1.6 }}>
-              Conoce los servicios disponibles antes de reservar tu cita.
-            </p>
+      <section id="servicios" className="landing-section landing-section-white">
+        <div className="landing-container">
+          <div className="landing-section-head">
+            <span>Servicios</span>
+            <h2>Todo para tu imagen personal</h2>
+            <p>Conoce los servicios disponibles antes de reservar tu cita.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 18 }}>
-            {[
-              { icon: '✂', title: 'Corte de cabello', desc: 'Cortes modernos, asesoramiento y acabado personalizado según rostro y estilo.' },
-              { icon: '🧔', title: 'Corte + barba', desc: 'Servicio completo para cabello y barba, ideal para una renovación total.' },
-              { icon: '✨', title: 'Perfilado de cejas', desc: 'Detalle adicional para mejorar la presentación final del cliente.' },
-              { icon: '🎨', title: 'Color y ondulación', desc: 'Servicios proyectados para ampliar la oferta de Blessed Barber Club.' },
-            ].map(s => (
-              <div key={s.title} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 24, padding: 24, boxShadow: '0 10px 30px rgba(15,23,42,.04)', transition: '.2s' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 16, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>{s.icon}</div>
-                <h3 style={{ fontFamily: "'Sora',sans-serif", marginBottom: 10 }}>{s.title}</h3>
-                <p style={{ color: '#64748b', lineHeight: 1.6, fontSize: 14 }}>{s.desc}</p>
+          <div className="landing-service-grid">
+            {SERVICES.map(s => (
+              <div key={s.title} className="landing-service-card">
+                <div className="landing-service-icon">{s.icon}</div>
+                <h3>{s.title}</h3>
+                <p>{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Cómo funciona ── */}
-      <section id="como-funciona" style={{ padding: '80px 24px', background: '#f8fafc' }}>
-        <div style={{ maxWidth: 1200, margin: 'auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 42 }}>
-            <span style={{ color: '#c9a227', fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1 }}>Reservas</span>
-            <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: 38, marginTop: 10 }}>Cómo funciona la reserva</h2>
+      <section id="como-funciona" className="landing-section landing-section-soft">
+        <div className="landing-container">
+          <div className="landing-section-head">
+            <span>Reservas</span>
+            <h2>Como funciona la reserva</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
-            {[
-              { n: '1', title: 'Regístrate', desc: 'El usuario público se registra únicamente como cliente con sus datos básicos.' },
-              { n: '2', title: 'Elige servicio', desc: 'Selecciona corte, barba, perfilado u otro servicio disponible en la barbería.' },
-              { n: '3', title: 'Reserva horario', desc: 'Consulta espacios libres y confirma la atención con el barbero disponible.' },
-            ].map(s => (
-              <div key={s.n} style={{ background: '#0f172a', color: 'white', borderRadius: 26, padding: 28 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 14, background: '#d4af37', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, marginBottom: 18, fontFamily: "'Sora',sans-serif", fontSize: 18 }}>{s.n}</div>
-                <h3 style={{ fontFamily: "'Sora',sans-serif", marginBottom: 10, fontSize: 20 }}>{s.title}</h3>
-                <p style={{ color: '#cbd5e1', lineHeight: 1.6, fontSize: 14 }}>{s.desc}</p>
+          <div className="landing-step-grid">
+            {STEPS.map(s => (
+              <div key={s.n} className="landing-step-card">
+                <div className="landing-step-number">{s.n}</div>
+                <h3>{s.title}</h3>
+                <p>{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Barbería ── */}
-      <section id="barberia" style={{ padding: '80px 24px', background: '#0f172a', color: 'white' }}>
-        <div style={{ maxWidth: 1200, margin: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'center' }}>
-          <div style={{ minHeight: 420, borderRadius: 32, background: 'linear-gradient(135deg,#1e293b,#0f172a)', border: '1px solid rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64 }}>✂</div>
+      <section id="barberia" className="landing-section landing-barberia">
+        <div className="landing-barberia-grid">
+          <div className="landing-barberia-image">✂</div>
           <div>
-            <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: 40, marginBottom: 16 }}>Una experiencia organizada desde la reserva</h2>
-            <p style={{ color: '#cbd5e1', lineHeight: 1.7, marginBottom: 22 }}>Gestión completa para la barbería: citas, clientes, barberos, inventario y más.</p>
-            <div style={{ display: 'grid', gap: 12 }}>
-              {['✔ Atención por reserva y horarios disponibles','✔ Historial de servicios para clientes registrados','✔ Notificaciones para cambios o reprogramaciones','✔ Panel administrativo para controlar la operación'].map(f => (
-                <div key={f} style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 18, padding: 14, color: '#e2e8f0' }}>{f}</div>
+            <h2>Una experiencia organizada desde la reserva</h2>
+            <p>Gestion completa para la barberia: citas, clientes, barberos, inventario y mas.</p>
+            <div className="landing-feature-list">
+              {FEATURES.map(f => (
+                <div key={f}>✓ {f}</div>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer style={{ background: '#020617', color: '#cbd5e1', padding: '28px 24px', textAlign: 'center', fontSize: 14 }}>
-        <p><strong style={{ color: '#d4af37' }}>Blessed Barber Club</strong> © 2026 - Sistema de información web para gestión de citas, clientes y servicios.</p>
+      <footer className="landing-footer">
+        <p><strong>Blessed Barber Club</strong> © 2026 - Sistema de informacion web para gestion de citas, clientes y servicios.</p>
       </footer>
     </div>
   );

@@ -1,0 +1,50 @@
+.roles-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.roles-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+}
+
+.roles-subtitle {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.roles-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 30px;
+}
+
+.roles-name {
+  font-weight: 700;
+}
+
+.roles-muted {
+  color: #64748b;
+}
+
+.roles-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.roles-delete {
+  color: #ef4444;
+  border-color: #fecaca;
+}
+
+.roles-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.roles-modal-button {
+  flex: 1;
+}

@@ -9,8 +9,17 @@ import Usuarios    from './pages/admin/usuarios';
 import Roles       from './pages/admin/roles';
 import Barberos    from './pages/admin/barberos';
 import Clientes    from './pages/admin/cliente';
+import Bitacora    from './pages/admin/bitacora';
+import Horarios    from './pages/admin/horarios';
+import Asistencia  from './pages/admin/asistencia';
+import Servicios   from './pages/admin/servicios';
+import Citas       from './pages/admin/citas';
+import Perfil      from './pages/admin/perfil';
 import Proximamente from './pages/admin/Proximamente';
 
+// App.jsx
+// Define las rutas del sistema. La landing es publica y el panel admin
+// queda protegido por PrivateRoute usando el usuario autenticado del contexto.
 export default function App() {
   return (
     <AuthProvider>
@@ -35,18 +44,19 @@ export default function App() {
             {/* CU5 */}
             <Route path="barberos"    element={<Barberos />} />
             <Route path="clientes"    element={<Clientes />} />
+            <Route path="bitacora"    element={<Bitacora />} />
 
             {/* Próximos ciclos */}
-            <Route path="servicios"   element={<Proximamente nombre="Servicios" />} />
-            <Route path="horarios"    element={<Proximamente nombre="Horarios" />} />
-            <Route path="citas"       element={<Proximamente nombre="Citas / Agenda" />} />
-            <Route path="asistencia"  element={<Proximamente nombre="Asistencia" />} />
+            <Route path="servicios"   element={<Servicios />} />
+            <Route path="horarios"    element={<Horarios />} />
+            <Route path="citas"       element={<Citas />} />
+            <Route path="asistencia"  element={<Asistencia />} />
             <Route path="promociones" element={<Proximamente nombre="Promociones" />} />
             <Route path="pagos"       element={<Proximamente nombre="Pagos" />} />
             <Route path="inventario"  element={<Proximamente nombre="Inventario" />} />
             <Route path="notificaciones" element={<Proximamente nombre="Notificaciones" />} />
             <Route path="reportes"    element={<Proximamente nombre="Reportes" />} />
-            <Route path="perfil"      element={<Proximamente nombre="Perfil" />} />
+            <Route path="perfil"      element={<Perfil />} />
           </Route>
 
           {/* Cualquier ruta no encontrada */}

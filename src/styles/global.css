@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --negro:        #0f172a;
+  --negro-2:      #111827;
+  --dorado:       #d4af37;
+  --dorado-hover: #c9a227;
+  --blanco:       #ffffff;
+  --gris:         #64748b;
+  --gris-claro:   #f8fafc;
+  --borde:        #e5e7eb;
+  --verde:        #22c55e;
+  --rojo:         #ef4444;
+  --sidebar-w:    240px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--gris-claro);
+  color: var(--negro);
+}
+
+h1,h2,h3,h4 { font-family: 'Sora', sans-serif; }
+a { text-decoration: none; color: inherit; }
+
+@keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }

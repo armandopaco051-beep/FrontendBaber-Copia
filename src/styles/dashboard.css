@@ -1,0 +1,117 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+
+.dashboard-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-card-title,
+.dashboard-section-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+}
+
+.dashboard-section-title {
+  margin-bottom: 14px;
+}
+
+.dashboard-card-subtitle {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.dashboard-time {
+  font-weight: 700;
+}
+
+.dashboard-status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dashboard-status-confirmada {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dashboard-status-pendiente {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.dashboard-status-atencion {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.dashboard-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-alert-list {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-alert {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dashboard-alert-ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dashboard-alert-warning {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.dashboard-alert-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.dashboard-service {
+  margin-bottom: 12px;
+}
+
+.dashboard-service-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.dashboard-service-percent {
+  font-weight: 700;
+}
+
+.dashboard-progress {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 99px;
+}
+
+.dashboard-progress-fill {
+  height: 6px;
+  background: var(--dorado);
+  border-radius: 99px;
+}
+
+.dashboard-progress-48 { width: 48%; }
+.dashboard-progress-31 { width: 31%; }
+.dashboard-progress-21 { width: 21%; }

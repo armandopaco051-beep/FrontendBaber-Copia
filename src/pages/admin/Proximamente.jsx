@@ -1,3 +1,5 @@
+// Pantalla placeholder para modulos planificados.
+// Permite dejar rutas creadas aunque el caso de uso aun no este implementado.
 export default function Proximamente({ nombre = 'Modulo' }) {
   return (
     <div className="card" style={{ minHeight: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
