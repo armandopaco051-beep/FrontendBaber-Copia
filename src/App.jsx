@@ -16,6 +16,14 @@ import Servicios   from './pages/admin/servicios';
 import Citas       from './pages/admin/citas';
 import Perfil      from './pages/admin/perfil';
 import Proximamente from './pages/admin/Proximamente';
+import ClienteLayout from './pages/cliente/ClienteLayout';
+import ClienteDashboard from './pages/cliente/ClienteDashboard';
+import ClienteReservar from './pages/cliente/ClienteReservar';
+import ClienteCitas from './pages/cliente/ClienteCitas';
+import ClienteHistorial from './pages/cliente/ClienteHistorial';
+import ClientePromociones from './pages/cliente/ClientePromociones';
+import ClientePerfil from './pages/cliente/ClientePerfil';
+import ClienteSoporte from './pages/cliente/ClienteSoporte';
 
 // App.jsx
 // Define las rutas del sistema. La landing es publica y el panel admin
@@ -30,7 +38,7 @@ export default function App() {
 
           {/* Admin (protegidas con JWT) */}
           <Route path="/admin" element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={['administrador', 'barbero']} allowedRoleIds={[1, 2]} redirectTo="/cliente/inicio">
               <AdminLayout />
             </PrivateRoute>
           }>
@@ -57,6 +65,22 @@ export default function App() {
             <Route path="notificaciones" element={<Proximamente nombre="Notificaciones" />} />
             <Route path="reportes"    element={<Proximamente nombre="Reportes" />} />
             <Route path="perfil"      element={<Perfil />} />
+          </Route>
+
+          {/* Portal cliente: solo rol Cliente o id_rol=3. */}
+          <Route path="/cliente" element={
+            <PrivateRoute allowedRoles={['cliente']} allowedRoleIds={[3]} redirectTo="/admin/dashboard">
+              <ClienteLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<Navigate to="inicio" replace />} />
+            <Route path="inicio" element={<ClienteDashboard />} />
+            <Route path="reservar" element={<ClienteReservar />} />
+            <Route path="citas" element={<ClienteCitas />} />
+            <Route path="historial" element={<ClienteHistorial />} />
+            <Route path="promociones" element={<ClientePromociones />} />
+            <Route path="perfil" element={<ClientePerfil />} />
+            <Route path="soporte" element={<ClienteSoporte />} />
           </Route>
 
           {/* Cualquier ruta no encontrada */}

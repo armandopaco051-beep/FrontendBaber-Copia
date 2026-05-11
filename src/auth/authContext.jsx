@@ -22,6 +22,7 @@ function getUsuarioFromToken(token) {
       nombre: payload.nombre,
       apellido: payload.apellido,
       rol: payload.rol || payload.role,
+      id_rol: payload.id_rol || payload.rol_id || payload.role_id,
     };
   } catch {
     localStorage.clear();
@@ -44,11 +45,18 @@ export function AuthProvider({ children }) {
     const res = await api.post('seguridad/login/', { correo, password });
     const { access, refresh, usuario } = res.data;
     const u = usuario || getUsuarioFromToken(access);
+    const tokenUser = getUsuarioFromToken(access);
+    const usuarioNormalizado = {
+      ...tokenUser,
+      ...u,
+      id_rol: u?.id_rol?.id || u?.id_rol || u?.rol_id || tokenUser?.id_rol,
+      rol: u?.id_rol?.nombre || u?.rol || u?.role || tokenUser?.rol,
+    };
 
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
-    setUsuario(u);
-    return u;
+    setUsuario(usuarioNormalizado);
+    return usuarioNormalizado;
   };
 
   // POST seguridad/logout/: invalida refresh en backend y limpia sesion local.

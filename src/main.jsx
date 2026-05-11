@@ -17,6 +17,7 @@ import './styles/asistencia.css'
 import './styles/servicios.css'
 import './styles/citas.css'
 import './styles/perfil.css'
+import './styles/clientePortal.css'
 import App from './App.jsx'
 
 // main.jsx monta React en el div root e importa todos los estilos globales

@@ -12,9 +12,6 @@ function texto(valor) {
   return String(valor ?? '').toLowerCase();
 }
 
-// Clasifica los registros para defender la pregunta:
-// "Puede controlar entrada y salida del usuario?".
-// Si la accion/descripcion habla de login se marca entrada; logout se marca salida.
 function tipoAccion(registro) {
   const combinado = `${texto(registro.accion)} ${texto(registro.descripcion)}`;
 
@@ -59,51 +56,6 @@ function metodoClase(metodo = '') {
   return `bitacora-method bitacora-method-${metodo.toLowerCase() || 'default'}`;
 }
 
-function obtenerUsuario(registro) {
-  const posibles = [
-    registro.codigo_usuario,
-    registro.usuario_codigo,
-    registro.codigoUser,
-    registro.codigo_user,
-    registro.id_usuario,
-    registro.usuario_id,
-    registro.user_id,
-    registro.usuario?.codigo,
-    registro.usuario?.correo,
-    registro.usuario?.nombre,
-    registro.user?.codigo,
-    registro.user?.correo,
-    registro.user?.email,
-    registro.user?.username,
-  ];
-
-  return posibles.find(valor => valor !== null && valor !== undefined && String(valor).trim() !== '') || 'Sin usuario';
-}
-
-function obtenerRol(registro) {
-  const posibles = [
-    registro.rol,
-    registro.nombre_rol,
-    registro.rol_usuario,
-    registro.usuario_rol,
-    registro.id_rol,
-    registro.rol_id,
-    registro.usuario?.rol,
-    registro.usuario?.nombre_rol,
-    registro.usuario?.id_rol,
-    registro.usuario?.id_rol?.nombre,
-    registro.usuario?.rol?.nombre,
-    registro.user?.rol,
-    registro.user?.role,
-    registro.user?.id_rol,
-    registro.user?.rol?.nombre,
-  ];
-
-  return posibles.find(valor => valor !== null && valor !== undefined && String(valor).trim() !== '') || 'Sin rol';
-}
-
-// Bitacora: consulta /api/seguridad/bitacora/ y muestra auditoria.
-// Campos usados: id, codigo_usuario, rol, accion, descripcion, metodo, ruta, ip y fecha.
 export default function Bitacora() {
   const [registros, setRegistros] = useState([]);
   const [buscar, setBuscar] = useState('');
@@ -111,7 +63,6 @@ export default function Bitacora() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // READ: trae todos los eventos de auditoria del backend.
   const cargarBitacora = async () => {
     setLoading(true);
     setError('');
@@ -129,7 +80,6 @@ export default function Bitacora() {
 
   useEffect(() => { cargarBitacora(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
-  // Calcula resumen de entradas, salidas y acciones generales.
   const metricas = useMemo(() => {
     const entradas = registros.filter(registro => tipoAccion(registro) === 'entrada').length;
     const salidas = registros.filter(registro => tipoAccion(registro) === 'salida').length;
@@ -142,7 +92,6 @@ export default function Bitacora() {
     };
   }, [registros]);
 
-  // Filtro por texto y por tipo de evento: todos/entrada/salida/accion.
   const filtrados = useMemo(() => {
     const termino = texto(buscar);
 
@@ -151,8 +100,7 @@ export default function Bitacora() {
       const coincideFiltro = filtro === 'todos' || tipo === filtro;
       const coincideBusqueda = [
         registro.id,
-        obtenerUsuario(registro),
-        obtenerRol(registro),
+        registro.codigo_usuario,
         registro.accion,
         registro.descripcion,
         registro.metodo,
@@ -197,7 +145,7 @@ export default function Bitacora() {
             <p className="bitacora-subtitle">Controla entradas, salidas y acciones realizadas por los usuarios.</p>
           </div>
           <button className="btn-gold" onClick={cargarBitacora} disabled={loading}>
-            {loading ? 'Actualizando...' : 'Actualizar'}
+              {loading ? 'Actualizando...' : 'Actualizar'}
           </button>
         </div>
 
@@ -227,7 +175,6 @@ export default function Bitacora() {
               <tr>
                 <th>ID</th>
                 <th>Usuario</th>
-                <th>Rol</th>
                 <th>Accion</th>
                 <th>Metodo</th>
                 <th>Ruta</th>
@@ -237,20 +184,13 @@ export default function Bitacora() {
             </thead>
             <tbody>
               {loading && registros.length === 0 ? (
-                <tr><td colSpan={8} className="bitacora-empty">Cargando bitacora...</td></tr>
+                <tr><td colSpan={7} className="bitacora-empty">Cargando bitacora...</td></tr>
               ) : filtrados.length === 0 ? (
-                <tr><td colSpan={8} className="bitacora-empty">No se encontraron registros.</td></tr>
+                <tr><td colSpan={7} className="bitacora-empty">No se encontraron registros.</td></tr>
               ) : filtrados.map(registro => (
                 <tr key={registro.id}>
                   <td className="bitacora-id">#{registro.id}</td>
-                  <td className={`bitacora-user ${obtenerUsuario(registro) === 'Sin usuario' ? 'bitacora-user-empty' : ''}`}>
-                    {obtenerUsuario(registro)}
-                  </td>
-                  <td>
-                    <span className={`bitacora-role ${obtenerRol(registro) === 'Sin rol' ? 'bitacora-role-empty' : ''}`}>
-                      {obtenerRol(registro)}
-                    </span>
-                  </td>
+                  <td className="bitacora-user">{registro.codigo_usuario || '-'}</td>
                   <td>
                     <span className={`bitacora-action bitacora-action-${tipoAccion(registro)}`}>
                       {registro.accion || '-'}

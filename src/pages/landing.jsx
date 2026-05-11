@@ -70,11 +70,10 @@ export default function Landing() {
     setLoading(true);
     try {
       const u = await login(loginData.correo, loginData.password);
-      if (u.rol === 'Administrador' || u.rol === 'Barbero') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/admin/dashboard');
-      }
+      const rol = String(u.rol || '').toLowerCase();
+      const idRol = String(u.id_rol || '');
+      const esCliente = rol.includes('cliente') || idRol === '3';
+      navigate(esCliente ? '/cliente/inicio' : '/admin/dashboard');
     } catch (e) {
       setError(formatApiError(e.response?.data, 'Correo electronico o contrasena incorrectos.'));
     } finally {
