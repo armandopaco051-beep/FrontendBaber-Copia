@@ -3,7 +3,7 @@ import { AuthProvider } from './auth/authContext';
 import PrivateRoute from './auth/PrivateRoute';
 
 import Landing     from './pages/landing';
-import AdminLayout from './pages/admin/adminLayout';
+import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard   from './pages/admin/dashboard';
 import Usuarios    from './pages/admin/usuarios';
 import Roles       from './pages/admin/roles';
@@ -62,6 +62,15 @@ export default function App() {
             <Route path="promociones" element={<Proximamente nombre="Promociones" />} />
             <Route path="pagos"       element={<Proximamente nombre="Pagos" />} />
             <Route path="inventario"  element={<Proximamente nombre="Inventario" />} />
+            <Route path="atencion-servicios" element={<Proximamente nombre="Registrar atencion de servicios" />} />
+            <Route path="categorias-inventario" element={<Proximamente nombre="Gestionar categorias" />} />
+            <Route path="productos" element={<Proximamente nombre="Gestionar producto" />} />
+            <Route path="insumos" element={<Proximamente nombre="Gestionar insumos" />} />
+            <Route path="metodos-pago" element={<Proximamente nombre="Gestionar metodos de pago" />} />
+            <Route path="caja" element={<Proximamente nombre="Gestionar caja" />} />
+            <Route path="ventas" element={<Proximamente nombre="Gestionar ventas" />} />
+            <Route path="movimientos-caja" element={<Proximamente nombre="Gestionar movimientos de caja" />} />
+            <Route path="comprobantes" element={<Proximamente nombre="Generar comprobante" />} />
             <Route path="notificaciones" element={<Proximamente nombre="Notificaciones" />} />
             <Route path="reportes"    element={<Proximamente nombre="Reportes" />} />
             <Route path="perfil"      element={<Perfil />} />

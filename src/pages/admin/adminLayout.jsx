@@ -1,77 +1,142 @@
-import {useNavigate, useLocation, Outlet} from 'react-router-dom';
-import {useAuth} from '../../auth/authContext';
-import {useState} from 'react';
+import { useState } from 'react';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useAuth } from '../../auth/authContext';
 
 const NAV = [
-  { section: 'PRINCIPAL', items: [
-    { id: 'dashboard',  label: 'Dashboard',     icon: '📊', path: '/admin/dashboard' },
-  ]},
-  { section: 'ADMINISTRACIÓN', items: [
-    { id: 'usuarios',   label: 'Usuarios',       icon: '👥', path: '/admin/usuarios' },
-    { id: 'roles',      label: 'Roles',          icon: '🛡', path: '/admin/roles' },
-    { id: 'barberos',   label: 'Barberos',       icon: '✂',  path: '/admin/barberos' },
-    { id: 'clientes',   label: 'Clientes',       icon: '😊', path: '/admin/clientes' },
-  ]},
-  { section: 'OPERACIÓN', items: [
-    { id: 'servicios',  label: 'Servicios',      icon: '🗒', path: '/admin/servicios' },
-    { id: 'horarios',   label: 'Horarios',       icon: '🕐', path: '/admin/horarios' },
-    { id: 'citas',      label: 'Citas / Agenda', icon: '📅', path: '/admin/citas' },
-    { id: 'asistencia', label: 'Asistencia',     icon: '✅', path: '/admin/asistencia' },
-  ]},
-  { section: 'COMERCIAL', items: [
-    { id: 'promociones',label: 'Promociones',    icon: '🏷', path: '/admin/promociones' },
-    { id: 'pagos',      label: 'Pagos',          icon: '💳', path: '/admin/pagos' },
-    { id: 'inventario', label: 'Inventario',     icon: '📦', path: '/admin/inventario' },
-  ]},
-  { section: 'ANÁLISIS', items: [
-    { id: 'notificaciones', label: 'Notificaciones', icon: '🔔', path: '/admin/notificaciones' },
-    { id: 'reportes',   label: 'Reportes',       icon: '📈', path: '/admin/reportes' },
-  ]},
-  { section: 'SISTEMA', items: [
-    { id: 'bitacora',   label: 'Bitacora',       icon: 'BI', path: '/admin/bitacora' },
-    { id: 'perfil',     label: 'Perfil',         icon: '👤', path: '/admin/perfil' },
-  ]},
+  {
+    id: 'seguridad',
+    label: 'Gestion de Seguridad y Auditoria',
+    icon: 'SG',
+    items: [
+      { id: 'roles', label: 'CU04 Gestionar roles', path: '/admin/roles' },
+      { id: 'bitacora', label: 'CU17 Consultar bitacora', path: '/admin/bitacora' },
+    ],
+  },
+  {
+    id: 'usuarios-personal',
+    label: 'Gestion de Usuarios y Personal',
+    icon: 'UP',
+    items: [
+      { id: 'usuarios', label: 'CU03 Gestionar usuarios', path: '/admin/usuarios' },
+      { id: 'barberos', label: 'CU05 Gestionar barberos', path: '/admin/barberos' },
+    ],
+  },
+  {
+    id: 'clientes',
+    label: 'Gestion de Clientes',
+    icon: 'CL',
+    items: [
+      { id: 'clientes', label: 'CU06 Gestionar clientes', path: '/admin/clientes' },
+    ],
+  },
+  {
+    id: 'servicios-atencion',
+    label: 'Gestion de Servicios y Atencion',
+    icon: 'SA',
+    items: [
+      { id: 'asistencia', label: 'CU09 Gestionar asistencia', path: '/admin/asistencia' },
+      { id: 'horarios', label: 'CU08 Gestionar horarios laborales', path: '/admin/horarios' },
+      { id: 'servicios', label: 'CU10 Gestionar servicios', path: '/admin/servicios' },
+      { id: 'atencion-servicios', label: 'CU14 Registrar atencion de servicios', path: '/admin/atencion-servicios' },
+    ],
+  },
+  {
+    id: 'agenda-citas',
+    label: 'Gestion de Agenda y Citas',
+    icon: 'AC',
+    items: [
+      { id: 'citas', label: 'CU11 Gestionar citas', path: '/admin/citas' },
+      { id: 'notificaciones', label: 'CU16 Gestionar notificaciones', path: '/admin/notificaciones' },
+    ],
+  },
+  {
+    id: 'inventario',
+    label: 'Gestion de Inventario',
+    icon: 'GI',
+    items: [
+      { id: 'categorias-inventario', label: 'CU22 Gestionar categorias', path: '/admin/categorias-inventario' },
+      { id: 'productos', label: 'CU23 Gestionar producto', path: '/admin/productos' },
+      { id: 'insumos', label: 'CU24 Gestionar insumos', path: '/admin/insumos' },
+    ],
+  },
+  {
+    id: 'ventas-caja',
+    label: 'Gestion de Ventas y Caja',
+    icon: 'VC',
+    items: [
+      { id: 'promociones', label: 'CU12 Gestionar promociones', path: '/admin/promociones' },
+      { id: 'metodos-pago', label: 'CU13 Gestionar metodos de pago', path: '/admin/metodos-pago' },
+      { id: 'caja', label: 'CU18 Gestionar caja', path: '/admin/caja' },
+      { id: 'ventas', label: 'CU20 Gestionar ventas', path: '/admin/ventas' },
+      { id: 'movimientos-caja', label: 'CU21 Gestionar movimientos de caja', path: '/admin/movimientos-caja' },
+      { id: 'comprobantes', label: 'CU25 Generar comprobante', path: '/admin/comprobantes' },
+    ],
+  },
+  {
+    id: 'reportes-gerenciales',
+    label: 'Gestion de Reportes Gerenciales',
+    icon: 'RG',
+    items: [
+      { id: 'reportes', label: 'CU19 Generar reportes', path: '/admin/reportes' },
+    ],
+  },
 ];
- 
-// Título de cada página para el topbar
+
 const PAGE_INFO = {
-  dashboard:  { title: 'Dashboard',             sub: 'Resumen operativo de Blessed Barber Club' },
-  usuarios:   { title: 'Gestión de usuarios',   sub: 'Crea, edita y controla accesos del sistema' },
-  roles:      { title: 'Gestión de roles',      sub: 'Define los tipos de usuario y permisos principales' },
-  barberos:   { title: 'Gestión de barberos',   sub: 'Administra datos, especialidades y estado del personal' },
-  clientes:   { title: 'Gestión de clientes',   sub: 'Consulta clientes, historial y frecuencia de visitas' },
-  servicios:  { title: 'Servicios',             sub: 'Gestiona los servicios disponibles' },
-  horarios:   { title: 'Horarios',              sub: 'Configura la disponibilidad de los barberos' },
-  citas:      { title: 'Citas / Agenda',        sub: 'Administra las citas del día' },
-  asistencia: { title: 'Asistencia',            sub: 'Control de asistencia del personal' },
-  promociones:{ title: 'Promociones',           sub: 'Gestiona descuentos y ofertas' },
-  pagos:      { title: 'Pagos',                 sub: 'Registro de pagos y transacciones' },
-  inventario: { title: 'Inventario',            sub: 'Control de productos y stock' },
-  notificaciones:{ title: 'Notificaciones',     sub: 'Alertas y mensajes del sistema' },
-  reportes:   { title: 'Reportes',              sub: 'Análisis y estadísticas' },
-  bitacora:   { title: 'Bitacora',              sub: 'Control de entradas, salidas y acciones del sistema' },
-  perfil:     { title: 'Perfil',                sub: 'Datos de la cuenta administradora' },
+  dashboard: { title: 'Dashboard', sub: 'Resumen operativo de Blessed Barber Club' },
+  usuarios: { title: 'Gestion de usuarios', sub: 'Crea, edita y controla accesos del sistema' },
+  roles: { title: 'Gestion de roles', sub: 'Define tipos de usuario y permisos principales' },
+  barberos: { title: 'Gestion de barberos', sub: 'Administra datos, especialidades y estado del personal' },
+  clientes: { title: 'Gestion de clientes', sub: 'Consulta clientes, historial y frecuencia de visitas' },
+  servicios: { title: 'Gestion de servicios', sub: 'Administra categorias, servicios, duracion y precio' },
+  horarios: { title: 'Horarios laborales', sub: 'Configura disponibilidad de barberos y bloqueos de agenda' },
+  citas: { title: 'Citas / Agenda', sub: 'Administra reservas, horarios y atencion diaria' },
+  asistencia: { title: 'Asistencia', sub: 'Control de asistencia y disponibilidad del personal' },
+  promociones: { title: 'Promociones', sub: 'Gestiona descuentos y ofertas comerciales' },
+  'metodos-pago': { title: 'Metodos de pago', sub: 'Configura las formas de pago disponibles' },
+  caja: { title: 'Caja', sub: 'Gestiona apertura, cierre y control de caja' },
+  ventas: { title: 'Ventas', sub: 'Registra y consulta ventas de la barberia' },
+  'movimientos-caja': { title: 'Movimientos de caja', sub: 'Controla ingresos y egresos de caja' },
+  comprobantes: { title: 'Comprobantes', sub: 'Genera comprobantes de venta y atencion' },
+  'atencion-servicios': { title: 'Atencion de servicios', sub: 'Registra la atencion realizada al cliente' },
+  'categorias-inventario': { title: 'Categorias de inventario', sub: 'Organiza productos e insumos por categoria' },
+  productos: { title: 'Productos', sub: 'Controla productos disponibles para venta o uso interno' },
+  insumos: { title: 'Insumos', sub: 'Gestiona insumos usados en servicios de barberia' },
+  inventario: { title: 'Inventario', sub: 'Control de productos, insumos y stock' },
+  pagos: { title: 'Pagos', sub: 'Registro de pagos y transacciones' },
+  notificaciones: { title: 'Notificaciones', sub: 'Alertas y mensajes para clientes y administracion' },
+  reportes: { title: 'Reportes gerenciales', sub: 'Genera reportes para la toma de decisiones' },
+  bitacora: { title: 'Bitacora', sub: 'Control de entradas, salidas y acciones del sistema' },
+  perfil: { title: 'Perfil', sub: 'Datos de la cuenta administradora' },
 };
- 
-// AdminLayout arma la estructura del panel privado:
-// menu lateral, topbar, cierre de sesion y Outlet para pintar cada modulo hijo.
+
+function grupoActivo(grupo, currentId) {
+  return grupo.items.some(item => item.id === currentId);
+}
+
+function estadoInicial(currentId) {
+  return NAV.reduce((acc, grupo) => {
+    acc[grupo.id] = grupoActivo(grupo, currentId);
+    return acc;
+  }, {});
+}
+
+// AdminLayout arma la estructura privada del administrador:
+// barra lateral por paquetes de casos de uso, topbar, cierre de sesion y Outlet.
 export default function AdminLayout() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(() => localStorage.getItem('admin_sidebar_open') !== 'false');
- 
-  // Obtener el ID de la ruta actual
   const currentId = location.pathname.split('/admin/')[1] || 'dashboard';
-  const info      = PAGE_INFO[currentId] || { title: 'Panel', sub: '' };
- 
-  // Cierra sesion usando AuthContext y redirige a la landing.
+  const info = PAGE_INFO[currentId] || { title: 'Panel', sub: '' };
+  const [sidebarOpen, setSidebarOpen] = useState(() => localStorage.getItem('admin_sidebar_open') !== 'false');
+  const [openGroups, setOpenGroups] = useState(() => estadoInicial(currentId));
+
   const handleLogout = async () => {
     await logout();
     navigate('/');
   };
 
-  // Abre/cierra la barra lateral y guarda la preferencia local.
   const toggleSidebar = () => {
     setSidebarOpen(prev => {
       const next = !prev;
@@ -79,46 +144,81 @@ export default function AdminLayout() {
       return next;
     });
   };
- 
+
+  const toggleGroup = grupoId => {
+    setOpenGroups(prev => ({ ...prev, [grupoId]: !prev[grupoId] }));
+  };
+
+  const irA = (item, grupoId) => {
+    setOpenGroups(prev => ({ ...prev, [grupoId]: true }));
+    navigate(item.path);
+  };
+
   return (
     <div className={`admin-wrapper ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-      {/* ── Sidebar ── */}
       <aside className={`sidebar ${sidebarOpen ? 'is-open' : 'is-hidden'}`}>
         <div className="sidebar-logo">
           <h2>Blessed Barber</h2>
           <span>Club Admin</span>
         </div>
- 
+
         <nav className="sidebar-nav">
-          {NAV.map(section => (
-            <div key={section.section}>
-              <div className="nav-section-label">{section.section}</div>
-              {section.items.map(item => (
-                <button
-                  key={item.id}
-                  className={`nav-item ${currentId === item.id ? 'active' : ''}`}
-                  onClick={() => navigate(item.path)}
-                >
-                  <span className="icon">{item.icon}</span>
-                  {item.label}
+          <button
+            className={`nav-item nav-dashboard ${currentId === 'dashboard' ? 'active' : ''}`}
+            onClick={() => navigate('/admin/dashboard')}
+          >
+            <span className="icon">DB</span>
+            Dashboard
+          </button>
+
+          <div className="nav-section-label">Paquetes de casos de uso</div>
+
+          {NAV.map(grupo => {
+            const activo = grupoActivo(grupo, currentId);
+            const abierto = openGroups[grupo.id] || activo;
+
+            return (
+              <div key={grupo.id} className={`nav-package ${activo ? 'active' : ''}`}>
+                <button className="nav-package-header" onClick={() => toggleGroup(grupo.id)}>
+                  <span className="package-icon">{grupo.icon}</span>
+                  <span>{grupo.label}</span>
+                  <strong>{abierto ? '^' : 'v'}</strong>
                 </button>
-              ))}
-            </div>
-          ))}
- 
-          {/* Cerrar sesión */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,.08)', marginTop: 16, paddingTop: 12 }}>
-            <button className="nav-item" onClick={handleLogout} style={{ color: '#f87171' }}>
-              <span className="icon">🚪</span>
-              Cerrar sesión
+
+                {abierto && (
+                  <div className="nav-package-items">
+                    {grupo.items.map(item => (
+                      <button
+                        key={item.id}
+                        className={`nav-case-item ${currentId === item.id ? 'active' : ''}`}
+                        onClick={() => irA(item, grupo.id)}
+                      >
+                        <span />
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <div className="nav-section-label">Sistema</div>
+          <button className={`nav-item ${currentId === 'perfil' ? 'active' : ''}`} onClick={() => navigate('/admin/perfil')}>
+            <span className="icon">PF</span>
+            Perfil
+          </button>
+
+          <div className="sidebar-session">
+            <button className="nav-item logout" onClick={handleLogout}>
+              <span className="icon">CS</span>
+              Cerrar sesion
             </button>
           </div>
         </nav>
       </aside>
- 
-      {/* ── Contenido principal ── */}
+
       <div className="admin-main">
-        {/* Topbar */}
         <div className="topbar">
           <div className="topbar-left">
             <button
@@ -128,7 +228,7 @@ export default function AdminLayout() {
               aria-label={sidebarOpen ? 'Ocultar menu' : 'Mostrar menu'}
               title={sidebarOpen ? 'Ocultar menu' : 'Mostrar menu'}
             >
-              <span>{sidebarOpen ? '×' : '☰'}</span>
+              <span>{sidebarOpen ? 'x' : '='}</span>
             </button>
             <div>
               <h1>{info.title}</h1>
@@ -136,19 +236,13 @@ export default function AdminLayout() {
             </div>
           </div>
           <div className="topbar-right">
-            <div style={{ position: 'relative' }}>
-              <input placeholder="🔍 Buscar..." style={{
-                border: '1px solid #e5e7eb', borderRadius: 14, padding: '10px 16px',
-                fontSize: 14, outline: 'none', width: 220, fontFamily: "'DM Sans',sans-serif",
-              }} />
-            </div>
+            <input className="admin-search" placeholder="Buscar..." />
             <div className="user-chip">
               {usuario?.nombre || 'Administrador'}
             </div>
           </div>
         </div>
- 
-        {/* Páginas */}
+
         <div className="page-body">
           <Outlet />
         </div>
