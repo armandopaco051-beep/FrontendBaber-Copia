@@ -3,7 +3,7 @@ import { AuthProvider } from './auth/authContext';
 import PrivateRoute from './auth/PrivateRoute';
 
 import Landing     from './pages/landing';
-import AdminLayout from './pages/admin/adminLayout';
+import AdminLayout from './pages/admin/adminlayout';
 import Dashboard   from './pages/admin/dashboard';
 import Usuarios    from './pages/admin/usuarios';
 import Roles       from './pages/admin/roles';
