@@ -37,7 +37,7 @@ const NAV = [
       { id: 'asistencia', label: 'CU09 Gestionar asistencia', path: '/admin/asistencia' },
       { id: 'horarios', label: 'CU08 Gestionar horarios laborales', path: '/admin/horarios' },
       { id: 'servicios', label: 'CU10 Gestionar servicios', path: '/admin/servicios' },
-      { id: 'atencion-servicios', label: 'CU14 Registrar atencion de servicios', path: '/admin/atencion-servicios' },
+      { id: 'atencion-servicios', label: 'Registrar atencion de servicios', path: '/admin/atencion-servicios' },
     ],
   },
   {
@@ -46,6 +46,8 @@ const NAV = [
     icon: 'AC',
     items: [
       { id: 'citas', label: 'CU11 Gestionar citas', path: '/admin/citas' },
+      { id: 'promociones', label: 'CU12 Gestionar promociones', path: '/admin/promociones' },
+      { id: 'disponibilidad', label: 'CU24 Consultar disponibilidad de horarios', path: '/admin/disponibilidad' },
       { id: 'notificaciones', label: 'CU16 Gestionar notificaciones', path: '/admin/notificaciones' },
     ],
   },
@@ -55,8 +57,8 @@ const NAV = [
     icon: 'GI',
     items: [
       { id: 'categorias-inventario', label: 'CU22 Gestionar categorias', path: '/admin/categorias-inventario' },
-      { id: 'productos', label: 'CU23 Gestionar producto', path: '/admin/productos' },
-      { id: 'insumos', label: 'CU24 Gestionar insumos', path: '/admin/insumos' },
+      { id: 'productos', label: 'CU15 Gestionar productos', path: '/admin/productos' },
+      { id: 'insumos', label: 'CU16 Gestionar insumos', path: '/admin/insumos' },
     ],
   },
   {
@@ -64,8 +66,8 @@ const NAV = [
     label: 'Gestion de Ventas y Caja',
     icon: 'VC',
     items: [
-      { id: 'promociones', label: 'CU12 Gestionar promociones', path: '/admin/promociones' },
       { id: 'metodos-pago', label: 'CU13 Gestionar metodos de pago', path: '/admin/metodos-pago' },
+      { id: 'planes-comision', label: 'CU14 Gestionar planes de comision', path: '/admin/planes-comision' },
       { id: 'caja', label: 'CU18 Gestionar caja', path: '/admin/caja' },
       { id: 'ventas', label: 'CU20 Gestionar ventas', path: '/admin/ventas' },
       { id: 'movimientos-caja', label: 'CU21 Gestionar movimientos de caja', path: '/admin/movimientos-caja' },
@@ -93,7 +95,9 @@ const PAGE_INFO = {
   citas: { title: 'Citas / Agenda', sub: 'Administra reservas, horarios y atencion diaria' },
   asistencia: { title: 'Asistencia', sub: 'Control de asistencia y disponibilidad del personal' },
   promociones: { title: 'Promociones', sub: 'Gestiona descuentos y ofertas comerciales' },
-  'metodos-pago': { title: 'Metodos de pago', sub: 'Configura las formas de pago disponibles' },
+  disponibilidad: { title: 'Disponibilidad de horarios', sub: 'Consulta horarios libres por servicio, fecha y barbero' },
+  'metodos-pago': { title: 'Metodos de pago', sub: 'Configura las formas de pago aceptadas por la barberia' },
+  'planes-comision': { title: 'Planes de comision', sub: 'Define porcentajes de ganancia para barberos y barberia' },
   caja: { title: 'Caja', sub: 'Gestiona apertura, cierre y control de caja' },
   ventas: { title: 'Ventas', sub: 'Registra y consulta ventas de la barberia' },
   'movimientos-caja': { title: 'Movimientos de caja', sub: 'Controla ingresos y egresos de caja' },

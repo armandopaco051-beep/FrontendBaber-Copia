@@ -1,0 +1,192 @@
+.promociones-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.promociones-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.promociones-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+}
+
+.promociones-subtitle,
+.promociones-muted {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.promociones-search {
+  margin-bottom: 18px;
+}
+
+.promociones-name {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.promociones-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.promociones-services span {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #334155;
+}
+
+.promociones-row-actions,
+.promociones-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.promociones-delete {
+  color: #b91c1c;
+}
+
+.promociones-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 28px;
+}
+
+.promociones-modal {
+  max-width: 760px;
+}
+
+.promociones-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.promociones-service-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.promociones-service-item.active {
+  border-color: #c9a227;
+  background: #fffbeb;
+}
+
+.promociones-service-item span {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.promociones-service-item small {
+  color: #64748b;
+}
+
+.promociones-textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.promociones-modal-button {
+  flex: 1;
+}
+
+.disponibilidad-admin-actions {
+  display: flex;
+  align-items: end;
+}
+
+.disponibilidad-admin-actions .btn-gold {
+  width: 100%;
+}
+
+.disponibilidad-admin-groups,
+.cliente-availability-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.disponibilidad-admin-group,
+.cliente-availability-group {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.disponibilidad-admin-group strong,
+.cliente-availability-heading strong {
+  font-family: 'Sora', sans-serif;
+  color: #0f172a;
+}
+
+.disponibilidad-admin-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cliente-availability-button {
+  margin-bottom: 16px;
+}
+
+.cliente-availability-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.cliente-availability-heading span,
+.cliente-selection-summary {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.cliente-selection-summary {
+  margin-top: 10px;
+  font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .promociones-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .promociones-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .promociones-header,
+  .promociones-row-actions,
+  .promociones-modal-actions,
+  .cliente-availability-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .promociones-checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+}

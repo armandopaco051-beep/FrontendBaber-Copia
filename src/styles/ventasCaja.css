@@ -1,0 +1,95 @@
+.ventas-caja-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ventas-caja-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.ventas-caja-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+}
+
+.ventas-caja-subtitle,
+.ventas-caja-muted {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.ventas-caja-search {
+  margin-bottom: 18px;
+}
+
+.ventas-caja-name {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ventas-caja-row-actions,
+.ventas-caja-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.ventas-caja-delete {
+  color: #b91c1c;
+}
+
+.ventas-caja-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 28px;
+}
+
+.ventas-caja-textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.ventas-caja-modal-button {
+  flex: 1;
+}
+
+.ventas-caja-plan-modal {
+  max-width: 760px;
+}
+
+.ventas-caja-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px 14px;
+  min-height: 50px;
+}
+
+.ventas-caja-checkbox input {
+  margin-top: 2px;
+}
+
+.ventas-caja-checkbox span {
+  color: #334155;
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .ventas-caja-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .ventas-caja-header,
+  .ventas-caja-row-actions,
+  .ventas-caja-modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

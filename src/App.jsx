@@ -14,6 +14,12 @@ import Horarios    from './pages/admin/horarios';
 import Asistencia  from './pages/admin/asistencia';
 import Servicios   from './pages/admin/servicios';
 import Citas       from './pages/admin/citas';
+import Promociones from './pages/admin/promociones';
+import DisponibilidadAdmin from './pages/admin/disponibilidad';
+import MetodosPago from './pages/admin/metodosPago';
+import PlanesComision from './pages/admin/planesComision';
+import Productos from './pages/admin/productos';
+import Insumos from './pages/admin/insumos';
 import Perfil      from './pages/admin/perfil';
 import Proximamente from './pages/admin/Proximamente';
 import ClienteLayout from './pages/cliente/ClienteLayout';
@@ -59,14 +65,16 @@ export default function App() {
             <Route path="horarios"    element={<Horarios />} />
             <Route path="citas"       element={<Citas />} />
             <Route path="asistencia"  element={<Asistencia />} />
-            <Route path="promociones" element={<Proximamente nombre="Promociones" />} />
+            <Route path="promociones" element={<Promociones />} />
+            <Route path="disponibilidad" element={<DisponibilidadAdmin />} />
+            <Route path="metodos-pago" element={<MetodosPago />} />
+            <Route path="planes-comision" element={<PlanesComision />} />
             <Route path="pagos"       element={<Proximamente nombre="Pagos" />} />
             <Route path="inventario"  element={<Proximamente nombre="Inventario" />} />
             <Route path="atencion-servicios" element={<Proximamente nombre="Registrar atencion de servicios" />} />
             <Route path="categorias-inventario" element={<Proximamente nombre="Gestionar categorias" />} />
-            <Route path="productos" element={<Proximamente nombre="Gestionar producto" />} />
-            <Route path="insumos" element={<Proximamente nombre="Gestionar insumos" />} />
-            <Route path="metodos-pago" element={<Proximamente nombre="Gestionar metodos de pago" />} />
+            <Route path="productos" element={<Productos />} />
+            <Route path="insumos" element={<Insumos />} />
             <Route path="caja" element={<Proximamente nombre="Gestionar caja" />} />
             <Route path="ventas" element={<Proximamente nombre="Gestionar ventas" />} />
             <Route path="movimientos-caja" element={<Proximamente nombre="Gestionar movimientos de caja" />} />
