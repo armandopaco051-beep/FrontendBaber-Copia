@@ -1,8 +1,13 @@
 import axios from 'axios';
 
+const DEFAULT_API_URL = 'https://backendbarber-copia.onrender.com/api';
+
+function normalizeApiBaseUrl(url) {
+  return `${(url || DEFAULT_API_URL).trim().replace(/\/+$/, '')}/`;
+}
+
 const api = axios.create({
- // baseURL: 'http://127.0.0.1:8000/api/',
-  baseURL: 'https://backend-barberia-ohjh.onrender.com/api',
+  baseURL: normalizeApiBaseUrl(import.meta.env.VITE_API_URL),
   headers: { 'Content-Type': 'application/json' },
 });
 

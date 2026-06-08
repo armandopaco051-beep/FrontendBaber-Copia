@@ -29,11 +29,25 @@ const FEATURES = [
   'Panel administrativo para controlar la operacion',
 ];
 
+function getApiMessage(data) {
+  if (!data || typeof data !== 'object') return '';
+  return data.mensaje || data.message || data.detail || '';
+}
+
+function normalizeRecoveryEmail(email) {
+  return email.trim().toLowerCase();
+}
+
+function normalizeRecoveryCode(code) {
+  return code.replace(/\D/g, '').slice(0, 6);
+}
+
 // Normaliza errores de login, registro y recuperacion para mostrarlos al usuario.
 function formatApiError(data, fallback = 'Ocurrio un error. Intenta nuevamente.') {
   if (!data) return fallback;
   if (typeof data === 'string') return data;
   if (data.error) return data.error;
+  if (data.mensaje) return data.mensaje;
   if (data.detail) return data.detail;
   if (data.message) return data.message;
 
@@ -128,8 +142,10 @@ export default function Landing() {
     setRecoverMsg('');
     setRecoverLoading(true);
     try {
-      const res = await api.post(PASSWORD_ENDPOINTS.solicitar, { correo: recoverData.correo });
-      setRecoverMsg(res.data?.message || res.data?.detail || 'Codigo temporal enviado. Revisa tu correo.');
+      const correo = normalizeRecoveryEmail(recoverData.correo);
+      setRecoverData(prev => ({ ...prev, correo }));
+      const res = await api.post(PASSWORD_ENDPOINTS.solicitar, { correo });
+      setRecoverMsg(getApiMessage(res.data) || 'Codigo temporal enviado. Revisa tu correo.');
       setRecoverStep('codigo');
     } catch (err) {
       setRecoverError(formatApiError(err.response?.data, 'No se pudo enviar el codigo temporal.'));
@@ -145,11 +161,14 @@ export default function Landing() {
     setRecoverMsg('');
     setRecoverLoading(true);
     try {
+      const correo = normalizeRecoveryEmail(recoverData.correo);
+      const codigo = normalizeRecoveryCode(recoverData.codigo);
+      setRecoverData(prev => ({ ...prev, correo, codigo }));
       const res = await api.post(PASSWORD_ENDPOINTS.validar, {
-        correo: recoverData.correo,
-        codigo: recoverData.codigo,
+        correo,
+        codigo,
       });
-      setRecoverMsg(res.data?.message || res.data?.detail || 'Codigo validado. Ingresa tu nueva contrasena.');
+      setRecoverMsg(getApiMessage(res.data) || 'Codigo validado. Ingresa tu nueva contrasena.');
       setRecoverStep('password');
     } catch (err) {
       setRecoverError(formatApiError(err.response?.data, 'Codigo invalido o vencido.'));
@@ -171,14 +190,17 @@ export default function Landing() {
 
     setRecoverLoading(true);
     try {
+      const correo = normalizeRecoveryEmail(recoverData.correo);
+      const codigo = normalizeRecoveryCode(recoverData.codigo);
+      setRecoverData(prev => ({ ...prev, correo, codigo }));
       const res = await api.post(PASSWORD_ENDPOINTS.restablecer, {
-        correo: recoverData.correo,
-        codigo: recoverData.codigo,
+        correo,
+        codigo,
         nueva_password: recoverData.password,
         confirmar_password: recoverData.confirmar,
       });
-      setRecoverMsg(res.data?.message || res.data?.detail || 'Contrasena restablecida correctamente.');
-      setLogin({ correo: recoverData.correo, password: '' });
+      setRecoverMsg(getApiMessage(res.data) || 'Contrasena restablecida correctamente.');
+      setLogin({ correo, password: '' });
       setRecoverData({ correo: '', codigo: '', password: '', confirmar: '' });
       setRecoverStep('correo');
       setTab('login');
@@ -341,7 +363,7 @@ export default function Landing() {
                   <div className="landing-field">
                     <label>Codigo temporal</label>
                     <input className="input-field" type="text" inputMode="numeric" maxLength={6} placeholder="000000" value={recoverData.codigo}
-                      onChange={e => updateRecover('codigo', e.target.value.replace(/\D/g, '').slice(0, 6))} disabled={recoverStep === 'password'} required />
+                      onChange={e => updateRecover('codigo', normalizeRecoveryCode(e.target.value))} disabled={recoverStep === 'password'} required />
                   </div>
                 )}
 
