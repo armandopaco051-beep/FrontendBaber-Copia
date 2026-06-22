@@ -23,6 +23,7 @@ import PlanesComision from './pages/admin/planesComision';
 import Ventas from './pages/admin/ventas';
 import Caja from './pages/admin/caja';
 import MovimientosCaja from './pages/admin/movimientosCaja';
+import Comprobantes from './pages/admin/comprobantes';
 import Reportes from './pages/admin/reportes';
 import Notificaciones from './pages/admin/notificaciones';
 import Productos from './pages/admin/productos';
@@ -85,7 +86,7 @@ export default function App() {
             <Route path="caja" element={<PermissionRoute permiso="caja.ver"><Caja /></PermissionRoute>} />
             <Route path="ventas" element={<PermissionRoute permiso="ventas.ver"><Ventas /></PermissionRoute>} />
             <Route path="movimientos-caja" element={<PermissionRoute permiso="caja.movimientos.ver"><MovimientosCaja /></PermissionRoute>} />
-            <Route path="comprobantes" element={<PermissionRoute permiso="ventas.ver"><Proximamente nombre="Generar comprobante" /></PermissionRoute>} />
+            <Route path="comprobantes" element={<PermissionRoute permiso="ventas.ver"><Comprobantes /></PermissionRoute>} />
             <Route path="notificaciones" element={<PermissionRoute permiso="notificaciones.ver"><Notificaciones /></PermissionRoute>} />
             <Route path="reportes"    element={<PermissionRoute permiso="reportes.ver"><Reportes /></PermissionRoute>} />
             <Route path="perfil"      element={<Perfil />} />
