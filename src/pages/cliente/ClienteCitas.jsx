@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../api/axiosConfig';
-import { barberoCita, estadoCita, estadoClase, fechaCita, formatApiError, horaCita, idCita, normalizarLista, servicioCita } from './clienteUtils';
+import { barberoCita, estadoCita, estadoClase, fechaCita, formatApiError, horaCita, idCita, normalizarLista, servicioCita, totalCita } from './clienteUtils';
 
 // Mis citas del cliente.
 // Consume cliente/citas/ para listar, y DELETE cliente/citas/{id}/ para cancelar.
@@ -62,11 +62,11 @@ export default function ClienteCitas() {
         {loading ? <p className="cliente-muted">Cargando citas...</p> : (
           <table className="tabla">
             <thead>
-              <tr><th>Fecha</th><th>Hora</th><th>Servicio</th><th>Barbero</th><th>Estado</th><th>Acciones</th></tr>
+              <tr><th>Fecha</th><th>Hora</th><th>Servicios</th><th>Total estimado</th><th>Barbero</th><th>Estado</th><th>Acciones</th></tr>
             </thead>
             <tbody>
               {filtradas.length === 0 ? (
-                <tr><td colSpan={6} className="cliente-empty">No tienes citas registradas.</td></tr>
+                <tr><td colSpan={7} className="cliente-empty">No tienes citas registradas.</td></tr>
               ) : filtradas.map(cita => {
                 const estado = estadoCita(cita);
                 const id = idCita(cita);
@@ -75,6 +75,7 @@ export default function ClienteCitas() {
                     <td>{fechaCita(cita)}</td>
                     <td>{horaCita(cita)}</td>
                     <td>{servicioCita(cita)}</td>
+                    <td>{totalCita(cita)}</td>
                     <td>{barberoCita(cita)}</td>
                     <td><span className={`badge ${estadoClase(estado)}`}>{estado}</span></td>
                     <td>

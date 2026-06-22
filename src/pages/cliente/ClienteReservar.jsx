@@ -3,7 +3,7 @@ import api from '../../api/axiosConfig';
 import { codigoBarbero, formatApiError, idServicio, nombrePersona, normalizarLista } from './clienteUtils';
 
 const EMPTY = {
-  id_servicio: '',
+  id_servicios: [],
   codigo_barbero: 'TODOS',
   codigo_barbero_reserva: '',
   fecha: '',
@@ -30,6 +30,14 @@ function normalizarGrupos(data) {
     barbero: grupo?.barbero || '-',
     disponibles: normalizarSlots(grupo),
   })).filter(grupo => grupo.disponibles.length > 0);
+}
+
+function precioServicio(servicio) {
+  return Number(servicio?.precio ?? servicio?.precio_base ?? servicio?.costo ?? 0) || 0;
+}
+
+function duracionServicio(servicio) {
+  return Number(servicio?.duracion_minutos ?? servicio?.duracion ?? servicio?.tiempo ?? 30) || 30;
 }
 
 export default function ClienteReservar() {
@@ -65,7 +73,7 @@ export default function ClienteReservar() {
   };
 
   const consultarDisponibilidad = async () => {
-    if (!form.id_servicio || !form.fecha) {
+    if (form.id_servicios.length === 0 || !form.fecha) {
       limpiarDisponibilidad();
       setMensaje('Selecciona servicio y fecha para consultar disponibilidad.');
       return;
@@ -80,9 +88,9 @@ export default function ClienteReservar() {
     limpiarDisponibilidad();
 
     try {
-      const response = await api.get('cliente/disponibilidad/', {
+      const response = await api.get('citas/disponibilidad/', {
         params: {
-          id_servicio: form.id_servicio,
+          id_servicios: form.id_servicios.join(','),
           fecha: form.fecha,
           codigo_barbero: esTodos ? 'TODOS' : form.codigo_barbero,
         },
@@ -109,7 +117,7 @@ export default function ClienteReservar() {
   };
 
   const actualizar = (patch) => {
-    const cambiaBusqueda = Object.prototype.hasOwnProperty.call(patch, 'id_servicio')
+    const cambiaBusqueda = Object.prototype.hasOwnProperty.call(patch, 'id_servicios')
       || Object.prototype.hasOwnProperty.call(patch, 'codigo_barbero')
       || Object.prototype.hasOwnProperty.call(patch, 'fecha');
 
@@ -129,6 +137,14 @@ export default function ClienteReservar() {
     }
   };
 
+  const toggleServicio = (id) => {
+    const idStr = String(id);
+    const next = form.id_servicios.includes(idStr)
+      ? form.id_servicios.filter(item => item !== idStr)
+      : [...form.id_servicios, idStr];
+    actualizar({ id_servicios: next });
+  };
+
   const seleccionarHorarioAgrupado = (codigo, hora) => {
     setForm(prev => ({
       ...prev,
@@ -140,7 +156,7 @@ export default function ClienteReservar() {
   const guardar = async () => {
     const codigoReserva = form.codigo_barbero === 'TODOS' ? form.codigo_barbero_reserva : form.codigo_barbero;
 
-    if (!form.id_servicio) return setMensaje('Selecciona un servicio.');
+    if (form.id_servicios.length === 0) return setMensaje('Selecciona al menos un servicio.');
     if (!form.fecha) return setMensaje('Selecciona una fecha.');
     if (!codigoReserva) return setMensaje('Selecciona un horario disponible.');
     if (!form.hora_inicio) return setMensaje('Selecciona un horario disponible.');
@@ -150,11 +166,11 @@ export default function ClienteReservar() {
 
     try {
       await api.post('cliente/citas/', {
-        id_servicio: form.id_servicio,
+        id_servicio: Number(form.id_servicios[0]),
+        servicios: form.id_servicios.map(id => ({ id_servicio: Number(id) })),
         codigo_barbero: codigoReserva,
         fecha: form.fecha,
         hora_inicio: form.hora_inicio,
-        metodo_pago_previsto: form.metodo_pago_previsto,
         observacion: form.observacion,
       });
       setMensaje('Cita reservada correctamente.');
@@ -168,6 +184,10 @@ export default function ClienteReservar() {
     }
   };
 
+  const serviciosSeleccionados = servicios.filter(servicio => form.id_servicios.includes(String(idServicio(servicio))));
+  const totalEstimado = serviciosSeleccionados.reduce((acc, servicio) => acc + precioServicio(servicio), 0);
+  const duracionTotal = serviciosSeleccionados.reduce((acc, servicio) => acc + duracionServicio(servicio), 0);
+
   return (
     <div className="cliente-page">
       <div className="card cliente-form-card">
@@ -176,18 +196,26 @@ export default function ClienteReservar() {
 
         {mensaje && <div className={`cliente-alert ${mensaje.includes('correctamente') ? 'success' : 'error'}`}>{mensaje}</div>}
 
-        <div className="form-row">
-          <div className="form-group">
-            <label>Servicio</label>
-            <select className="input-field" value={form.id_servicio} onChange={e => actualizar({ id_servicio: e.target.value })}>
-              <option value="">Seleccionar servicio</option>
-              {servicios.map(servicio => (
-                <option key={idServicio(servicio)} value={idServicio(servicio)}>
-                  {servicio.nombre || servicio.servicio} - {servicio.duracion_minutos || servicio.duracion || 30} min
-                </option>
-              ))}
-            </select>
+        <div className="form-group">
+          <label>Servicios</label>
+          <div className="cliente-services-grid">
+            {servicios.map(servicio => {
+              const id = String(idServicio(servicio));
+              const activo = form.id_servicios.includes(id);
+              return (
+                <button key={id} type="button" className={`cliente-service-option ${activo ? 'active' : ''}`} onClick={() => toggleServicio(id)}>
+                  <strong>{servicio.nombre || servicio.servicio}</strong>
+                  <span>{duracionServicio(servicio)} min · Bs. {precioServicio(servicio).toFixed(2)}</span>
+                </button>
+              );
+            })}
           </div>
+          <div className="cliente-selection-summary">
+            {form.id_servicios.length} servicio(s) · {duracionTotal} min · Total estimado Bs. {totalEstimado.toFixed(2)}
+          </div>
+        </div>
+
+        <div className="form-row">
           <div className="form-group">
             <label>Barbero</label>
             <select className="input-field" value={form.codigo_barbero} onChange={e => actualizar({ codigo_barbero: e.target.value })}>
@@ -224,7 +252,7 @@ export default function ClienteReservar() {
 
           {loadingHorarios ? (
             <span className="cliente-muted">Consultando disponibilidad...</span>
-          ) : !form.id_servicio || !form.fecha ? (
+          ) : form.id_servicios.length === 0 || !form.fecha ? (
             <span className="cliente-muted">Selecciona servicio y fecha para consultar horarios.</span>
           ) : !consultaRealizada ? (
             <span className="cliente-muted">Haz clic en "Consultar disponibilidad" para ver horarios libres.</span>

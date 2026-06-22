@@ -64,9 +64,20 @@ export function estadoCita(cita) {
 }
 
 export function servicioCita(cita) {
+  const detalles = cita?.servicios_detalle || cita?.detalles_servicio || cita?.servicios;
+  if (Array.isArray(detalles) && detalles.length) {
+    return detalles.map(item => item.servicio || item.nombre || item.servicio_nombre || `Servicio ${item.id_servicio || ''}`).join(', ');
+  }
   const servicio = cita?.id_servicio || cita?.servicio;
   if (servicio && typeof servicio === 'object') return servicio.nombre || servicio.servicio || '-';
   return cita?.servicio_nombre || cita?.nombre_servicio || '-';
+}
+
+export function totalCita(cita) {
+  const total = cita?.total_estimado ?? cita?.subtotal_servicios ?? cita?.precio_base;
+  if (total === undefined || total === null || total === '') return '-';
+  const numero = Number(total);
+  return Number.isNaN(numero) ? total : `Bs. ${numero.toFixed(2)}`;
 }
 
 export function barberoCita(cita) {

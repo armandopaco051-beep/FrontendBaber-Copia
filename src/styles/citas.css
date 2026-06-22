@@ -75,6 +75,12 @@
   font-style: normal;
 }
 
+.citas-cell-action {
+  justify-self: start;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
 .citas-cell.free {
   background: #f8fafc;
   color: #94a3b8;
@@ -95,6 +101,41 @@
   flex-wrap: wrap;
   gap: 10px;
   min-height: 44px;
+}
+
+.citas-services-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.citas-service-option {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.citas-service-option.active {
+  border-color: #d4af37;
+  background: #fffbeb;
+}
+
+.citas-service-option strong,
+.citas-service-option span {
+  display: block;
+}
+
+.citas-service-option strong {
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.citas-service-option span {
+  color: #64748b;
+  font-size: 13px;
 }
 
 .citas-manual-slots {
@@ -155,6 +196,40 @@
   font-weight: 700;
 }
 
+.citas-detail-totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.citas-detail-totals div,
+.citas-service-detail {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.citas-detail-totals span,
+.citas-service-detail span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.citas-detail-totals strong,
+.citas-service-detail strong {
+  color: #0f172a;
+}
+
+.citas-service-detail-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
 .citas-refresh {
   margin-top: 10px;
 }
@@ -181,6 +256,10 @@
   .citas-toolbar {
     grid-template-columns: 1fr;
   }
+
+  .citas-services-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 720px) {
@@ -192,5 +271,9 @@
   .citas-modal-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .citas-detail-totals {
+    grid-template-columns: 1fr;
   }
 }

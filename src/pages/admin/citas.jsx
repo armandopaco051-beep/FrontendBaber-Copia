@@ -5,7 +5,7 @@ const ESTADOS = ['Pendiente', 'Confirmada', 'En atencion', 'Finalizada', 'Cancel
 const METODOS_PAGO = ['Pendiente', 'QR', 'Efectivo', 'Tarjeta'];
 const EMPTY = {
   id_cliente: '',
-  id_servicio: '',
+  id_servicios: [],
   id_barbero: '',
   fecha: fechaHoy(),
   hora_inicio: '',
@@ -140,6 +140,25 @@ function citaServicioId(cita) {
     || '';
 }
 
+function citaServiciosDetalle(cita) {
+  if (Array.isArray(cita?.servicios_detalle)) return cita.servicios_detalle;
+  if (Array.isArray(cita?.detalles_servicio)) return cita.detalles_servicio;
+  if (Array.isArray(cita?.servicios)) return cita.servicios;
+  return [];
+}
+
+function idCita(cita) {
+  return cita?.id_cita || cita?.id || '';
+}
+
+function idServicioDetalle(detalle) {
+  return detalle?.id_servicio || detalle?.servicio?.id_servicio || detalle?.servicio?.id || detalle?.id || '';
+}
+
+function nombreServicioDetalle(detalle, mapa) {
+  return detalle?.servicio || detalle?.nombre || detalle?.servicio_nombre || nombreServicio(mapa.get(String(idServicioDetalle(detalle))));
+}
+
 function nombrePersona(item) {
   return `${item?.nombre || ''} ${item?.apellido || ''}`.trim() || item?.correo || item?.codigo || '-';
 }
@@ -204,6 +223,10 @@ function duracionServicio(servicio) {
   return Number(valor) || 30;
 }
 
+function precioServicio(servicio) {
+  return Number(servicio?.precio ?? servicio?.precio_base ?? servicio?.costo ?? 0) || 0;
+}
+
 function sumarMinutos(hora, minutos) {
   if (!hora) return '';
   const [h, m] = hora.split(':').map(Number);
@@ -225,6 +248,20 @@ function estadoClase(estado) {
   if (valor.includes('cancelada') || valor.includes('anulada') || valor.includes('no asistio')) return 'badge-red';
   if (valor.includes('atencion')) return 'badge-blue';
   return 'badge-gray';
+}
+
+function estadoPayload(estado) {
+  const mapa = {
+    Pendiente: 'PENDIENTE',
+    Confirmada: 'CONFIRMADA',
+    'En atencion': 'EN_ATENCION',
+    Finalizada: 'FINALIZADA',
+    Cancelada: 'CANCELADA',
+    Reprogramada: 'REPROGRAMADA',
+    'No asistio': 'NO_ASISTIO',
+    Anulada: 'ANULADA',
+  };
+  return mapa[estado] || String(estado || '').toUpperCase();
 }
 
 function horasAgenda(citas, slots) {
@@ -252,6 +289,8 @@ export default function Citas() {
   const [filtroEstado, setFiltroEstado] = useState('');
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({ ...EMPTY });
+  const [selectedCita, setSelectedCita] = useState(null);
+  const [serviciosExtra, setServiciosExtra] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingDisponibilidad, setLoadingDisponibilidad] = useState(false);
   const [disponibilidadEstado, setDisponibilidadEstado] = useState('idle');
@@ -291,7 +330,7 @@ export default function Citas() {
   // READ disponibilidad: pregunta al backend que horarios puede tomar el barbero.
   // reqId evita que respuestas antiguas pisen la seleccion actual del formulario.
   const consultarDisponibilidad = async (datos = form) => {
-    if (!datos.id_servicio || !datos.id_barbero || !datos.fecha) {
+    if (!datos.id_servicios?.length || !datos.id_barbero || !datos.fecha) {
       setDisponibilidad([]);
       setDisponibilidadEstado('idle');
       setDisponibilidadMsg('');
@@ -311,7 +350,7 @@ export default function Citas() {
       const response = await api.get('citas/disponibilidad/', {
         params: {
           codigo_barbero: codigoDelBarbero,
-          id_servicio: datos.id_servicio,
+          id_servicios: datos.id_servicios.join(','),
           fecha: datos.fecha,
         },
         timeout: 15000,
@@ -325,7 +364,7 @@ export default function Citas() {
       setDisponibilidadDebug({
         enviado: {
           codigo_barbero: codigoDelBarbero,
-          id_servicio: datos.id_servicio,
+          id_servicios: datos.id_servicios.join(','),
           fecha: datos.fecha,
         },
         backend: response.data?.debug || null,
@@ -353,14 +392,38 @@ export default function Citas() {
 
   // Actualiza campos del formulario y reconsulta disponibilidad si ya hay datos base.
   const actualizarForm = (patch) => {
-    const next = { ...form, ...patch, hora_inicio: patch.id_servicio || patch.id_barbero || patch.fecha ? '' : form.hora_inicio };
+    const next = { ...form, ...patch, hora_inicio: patch.id_servicios || patch.id_barbero || patch.fecha ? '' : form.hora_inicio };
     setForm(next);
 
-    if (next.id_servicio && next.id_barbero && next.fecha) {
+    if (next.id_servicios.length && next.id_barbero && next.fecha) {
       consultarDisponibilidad(next);
     } else {
       setDisponibilidadDebug(null);
     }
+  };
+
+  const toggleServicio = (id) => {
+    const idStr = String(id);
+    const next = form.id_servicios.includes(idStr)
+      ? form.id_servicios.filter(item => item !== idStr)
+      : [...form.id_servicios, idStr];
+    actualizarForm({ id_servicios: next });
+  };
+
+  const toggleServicioExtra = (id) => {
+    const idStr = String(id);
+    setServiciosExtra(prev => prev.includes(idStr) ? prev.filter(item => item !== idStr) : [...prev, idStr]);
+  };
+
+  const abrirDetalle = (cita) => {
+    setSelectedCita(cita);
+    setServiciosExtra([]);
+    setModal('detalle');
+  };
+
+  const abrirAgregarServicios = () => {
+    setServiciosExtra([]);
+    setModal('agregarServicios');
   };
 
   // Abre modal de nueva cita y cancela consultas viejas.
@@ -378,6 +441,8 @@ export default function Citas() {
   const cerrar = () => {
     disponibilidadReqId.current += 1;
     setModal(null);
+    setSelectedCita(null);
+    setServiciosExtra([]);
     setForm({ ...EMPTY, fecha });
     setDisponibilidad([]);
     setDisponibilidadEstado('idle');
@@ -396,13 +461,15 @@ export default function Citas() {
     setLoadingDisponibilidad(false);
   };
 
-  const servicioSeleccionado = servicios.find(servicio => String(entidadId(servicio, 'servicio')) === String(form.id_servicio));
-  const horaFin = form.hora_inicio ? sumarMinutos(form.hora_inicio, duracionServicio(servicioSeleccionado)) : '';
+  const serviciosSeleccionados = servicios.filter(servicio => form.id_servicios.includes(String(entidadId(servicio, 'servicio'))));
+  const duracionTotal = serviciosSeleccionados.reduce((acc, servicio) => acc + duracionServicio(servicio), 0);
+  const totalEstimado = serviciosSeleccionados.reduce((acc, servicio) => acc + precioServicio(servicio), 0);
+  const horaFin = form.hora_inicio ? sumarMinutos(form.hora_inicio, duracionTotal) : '';
 
   // CREATE cita: envia codigo_cliente, codigo_barbero, id_servicio, fecha y hora_inicio.
   const guardar = async () => {
     if (!form.id_cliente) return showToast('Selecciona un cliente', 'error');
-    if (!form.id_servicio) return showToast('Selecciona un servicio', 'error');
+    if (form.id_servicios.length === 0) return showToast('Selecciona al menos un servicio', 'error');
     if (!form.id_barbero) return showToast('Selecciona un barbero', 'error');
     if (!form.fecha) return showToast('Selecciona una fecha', 'error');
     if (!form.hora_inicio) {
@@ -414,16 +481,17 @@ export default function Citas() {
 
     const payload = {
       codigo_cliente: form.id_cliente,
-      id_servicio: form.id_servicio,
+      id_servicio: Number(form.id_servicios[0]),
+      servicios: form.id_servicios.map(id => ({ id_servicio: Number(id) })),
       codigo_barbero: codigoDelBarbero,
       fecha: form.fecha,
       hora_inicio: form.hora_inicio,
-      estado: form.estado,
-      metodo_pago_previsto: form.metodo_pago_previsto,
+      estado: estadoPayload(form.estado),
       observacion: form.observacion,
     };
 
     try {
+      console.log('Payload cita admin:', payload);
       const response = await api.post('citas/citas/', payload);
       const nuevaCita = response.data?.cita || response.data;
       if (nuevaCita && typeof nuevaCita === 'object') setCitas(prev => [...prev, nuevaCita]);
@@ -431,7 +499,45 @@ export default function Citas() {
       cerrar();
       cargarBase();
     } catch (e) {
+      console.error('Error creando cita admin:', e.response?.data || e);
       showToast(formatApiError(e.response?.data), 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const guardarServiciosExtra = async () => {
+    if (!selectedCita) return;
+    if (serviciosExtra.length === 0) return showToast('Selecciona al menos un servicio adicional.', 'error');
+
+    const existentes = citaServiciosDetalle(selectedCita).map(detalle => String(idServicioDetalle(detalle))).filter(Boolean);
+    const idServiciosTodos = [...new Set([...existentes, ...serviciosExtra])];
+    const codigoDelBarbero = citaBarberoId(selectedCita);
+
+    setLoading(true);
+    try {
+      if (codigoDelBarbero && fechaCita(selectedCita) && idServiciosTodos.length) {
+        await api.get('citas/disponibilidad/', {
+          params: {
+            codigo_barbero: codigoDelBarbero,
+            id_servicios: idServiciosTodos.join(','),
+            fecha: fechaCita(selectedCita),
+          },
+        });
+      }
+
+      const response = await api.post(`citas/citas/${idCita(selectedCita)}/servicios/`, {
+        servicios: serviciosExtra.map(id => ({ id_servicio: Number(id) })),
+      });
+      const citaActualizada = response.data?.cita || response.data;
+      setCitas(prev => prev.map(cita => String(idCita(cita)) === String(idCita(citaActualizada)) ? citaActualizada : cita));
+      setSelectedCita(citaActualizada);
+      setServiciosExtra([]);
+      setModal('detalle');
+      showToast(response.data?.mensaje || 'Servicios agregados correctamente.');
+    } catch (e) {
+      const mensaje = formatApiError(e.response?.data, 'No se pudieron agregar servicios a la cita.');
+      showToast(mensaje.toLowerCase().includes('cobrada') ? 'No se pueden agregar servicios a una cita que ya fue cobrada.' : mensaje, 'error');
     } finally {
       setLoading(false);
     }
@@ -534,7 +640,10 @@ export default function Citas() {
                       horaInicioCita(item) === hora
                     );
                     const clienteNombre = cita ? nombreCitaPersona(cita, ['codigo_cliente', 'id_cliente', 'cliente'], clientesMap, citaClienteId) : '-';
-                    const servicioNombre = cita ? nombreCitaServicio(cita, serviciosMap) : '-';
+                    const serviciosDetalle = cita ? citaServiciosDetalle(cita) : [];
+                    const servicioNombre = serviciosDetalle.length
+                      ? serviciosDetalle.map(item => item.servicio || item.nombre || nombreServicio(serviciosMap.get(String(item.id_servicio)))).join(', ')
+                      : cita ? nombreCitaServicio(cita, serviciosMap) : '-';
                     const estado = cita ? estadoCita(cita) : '';
 
                     return (
@@ -544,6 +653,7 @@ export default function Citas() {
                             <strong>{clienteNombre}</strong>
                             <span>{servicioNombre}</span>
                             <em className={`badge ${estadoClase(estado)}`}>{estado}</em>
+                            <button className="btn-outline citas-cell-action" type="button" onClick={() => abrirDetalle(cita)}>Ver detalle</button>
                           </div>
                         ) : (
                           <div className="citas-cell free">Libre</div>
@@ -562,7 +672,7 @@ export default function Citas() {
         <div className="modal-overlay" onClick={cerrar}>
           <div className="modal-box citas-modal" onClick={e => e.stopPropagation()}>
             <h3>Nueva cita</h3>
-            <p>Selecciona cliente, servicio, barbero y un horario disponible.</p>
+            <p>Selecciona cliente, uno o mas servicios, barbero y un horario disponible.</p>
 
             <div className="form-row">
               <div className="form-group">
@@ -572,12 +682,24 @@ export default function Citas() {
                   {clientes.map(cliente => <option key={codigoCliente(cliente)} value={codigoCliente(cliente)}>{nombrePersona(cliente)}</option>)}
                 </select>
               </div>
-              <div className="form-group">
-                <label>Servicio</label>
-                <select className="input-field" value={form.id_servicio} onChange={e => actualizarForm({ id_servicio: e.target.value })}>
-                  <option value="">Seleccionar servicio</option>
-                  {servicios.map(servicio => <option key={entidadId(servicio, 'servicio')} value={entidadId(servicio, 'servicio')}>{nombreServicio(servicio)} - {duracionServicio(servicio)} min</option>)}
-                </select>
+            </div>
+
+            <div className="form-group">
+              <label>Servicios</label>
+              <div className="citas-services-grid">
+                {servicios.map(servicio => {
+                  const id = String(entidadId(servicio, 'servicio'));
+                  const activo = form.id_servicios.includes(id);
+                  return (
+                    <button key={id} type="button" className={`citas-service-option ${activo ? 'active' : ''}`} onClick={() => toggleServicio(id)}>
+                      <strong>{nombreServicio(servicio)}</strong>
+                      <span>{duracionServicio(servicio)} min · Bs. {precioServicio(servicio).toFixed(2)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="citas-time-summary">
+                {form.id_servicios.length} servicio(s) · {duracionTotal} min · Total estimado Bs. {totalEstimado.toFixed(2)}
               </div>
             </div>
 
@@ -600,7 +722,7 @@ export default function Citas() {
               <div className="citas-slots">
                 {loadingDisponibilidad ? (
                   <span className="citas-slot-info">Consultando disponibilidad...</span>
-                ) : !form.id_servicio || !form.id_barbero || !form.fecha ? (
+                ) : form.id_servicios.length === 0 || !form.id_barbero || !form.fecha ? (
                   <span className="citas-slot-info">Selecciona servicio, barbero y fecha para consultar disponibilidad.</span>
                 ) : disponibilidad.length === 0 ? (
                   <>
@@ -610,7 +732,7 @@ export default function Citas() {
                     {disponibilidadDebug && (
                       <div className="citas-debug">
                         {disponibilidadDebug.enviado && (
-                          <span>Enviado: barbero {disponibilidadDebug.enviado.codigo_barbero || '-'}, servicio {disponibilidadDebug.enviado.id_servicio || '-'}, fecha {disponibilidadDebug.enviado.fecha || '-'}</span>
+                          <span>Enviado: barbero {disponibilidadDebug.enviado.codigo_barbero || '-'}, servicios {disponibilidadDebug.enviado.id_servicios || '-'}, fecha {disponibilidadDebug.enviado.fecha || '-'}</span>
                         )}
                         {disponibilidadDebug.backend?.dia_semana_calculado && (
                           <span>Dia calculado: {disponibilidadDebug.backend.dia_semana_calculado}</span>
@@ -638,7 +760,7 @@ export default function Citas() {
                   </button>
                 ))}
               </div>
-              {form.id_servicio && form.id_barbero && form.fecha && (
+              {form.id_servicios.length > 0 && form.id_barbero && form.fecha && (
                 <button className="btn-outline citas-refresh" type="button" onClick={() => consultarDisponibilidad()}>
                   Reconsultar disponibilidad
                 </button>
@@ -670,6 +792,71 @@ export default function Citas() {
               <button className="btn-outline citas-modal-button" onClick={cerrar}>Cancelar</button>
               <button className="btn-outline citas-modal-button" onClick={limpiarFormulario}>Limpiar</button>
               <button className="btn-gold citas-modal-button" onClick={guardar} disabled={loading}>{loading ? 'Guardando...' : 'Guardar cita'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal === 'detalle' && selectedCita && (
+        <div className="modal-overlay" onClick={cerrar}>
+          <div className="modal-box citas-modal" onClick={e => e.stopPropagation()}>
+            <h3>Detalle de cita #{idCita(selectedCita)}</h3>
+            <p>{nombreCitaPersona(selectedCita, ['codigo_cliente', 'id_cliente', 'cliente'], clientesMap, citaClienteId)} - {fechaCita(selectedCita)} {horaInicioCita(selectedCita)}</p>
+
+            <div className="citas-detail-totals">
+              <div><span>Subtotal servicios</span><strong>Bs. {Number(selectedCita.subtotal_servicios || 0).toFixed(2)}</strong></div>
+              <div><span>Total estimado</span><strong>Bs. {Number(selectedCita.total_estimado || 0).toFixed(2)}</strong></div>
+            </div>
+
+            <div className="ventas-section-head">
+              <h4>Servicios de la cita</h4>
+              <button className="btn-outline" type="button" onClick={abrirAgregarServicios}>Añadir servicio</button>
+            </div>
+
+            <div className="citas-service-detail-list">
+              {citaServiciosDetalle(selectedCita).length === 0 ? (
+                <div className="citas-slot-info">Esta cita no tiene servicios detallados.</div>
+              ) : citaServiciosDetalle(selectedCita).map(detalle => (
+                <div className="citas-service-detail" key={idServicioDetalle(detalle)}>
+                  <strong>{nombreServicioDetalle(detalle, serviciosMap)}</strong>
+                  <span>Precio: Bs. {Number(detalle.precio_unitario || 0).toFixed(2)}</span>
+                  <span>Duracion: {detalle.duracion_minutos || '-'} min</span>
+                  <span>Subtotal: Bs. {Number(detalle.subtotal || 0).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="citas-modal-actions">
+              <button className="btn-outline citas-modal-button" onClick={cerrar}>Cerrar</button>
+              <button className="btn-gold citas-modal-button" onClick={abrirAgregarServicios}>Añadir servicio</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal === 'agregarServicios' && selectedCita && (
+        <div className="modal-overlay" onClick={() => setModal('detalle')}>
+          <div className="modal-box citas-modal" onClick={e => e.stopPropagation()}>
+            <h3>Añadir servicio</h3>
+            <p>Selecciona uno o varios servicios adicionales para esta cita.</p>
+
+            <div className="citas-services-grid">
+              {servicios.map(servicio => {
+                const id = String(entidadId(servicio, 'servicio'));
+                const yaExiste = citaServiciosDetalle(selectedCita).some(detalle => String(idServicioDetalle(detalle)) === id);
+                const activo = serviciosExtra.includes(id);
+                return (
+                  <button key={id} type="button" className={`citas-service-option ${activo ? 'active' : ''}`} disabled={yaExiste} onClick={() => toggleServicioExtra(id)}>
+                    <strong>{nombreServicio(servicio)}</strong>
+                    <span>{yaExiste ? 'Ya agregado' : `${duracionServicio(servicio)} min - Bs. ${precioServicio(servicio).toFixed(2)}`}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="citas-modal-actions">
+              <button className="btn-outline citas-modal-button" onClick={() => setModal('detalle')}>Cancelar</button>
+              <button className="btn-gold citas-modal-button" onClick={guardarServiciosExtra} disabled={loading}>{loading ? 'Guardando...' : 'Guardar servicios'}</button>
             </div>
           </div>
         </div>

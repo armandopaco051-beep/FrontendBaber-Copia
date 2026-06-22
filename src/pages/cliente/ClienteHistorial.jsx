@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../api/axiosConfig';
-import { barberoCita, estadoCita, fechaCita, formatApiError, normalizarLista, servicioCita } from './clienteUtils';
+import { barberoCita, estadoCita, fechaCita, formatApiError, normalizarLista, servicioCita, totalCita } from './clienteUtils';
 
 // Historial del cliente.
 // Usa cliente/citas/ y muestra citas finalizadas o pasadas como historial de servicios.
@@ -40,7 +40,7 @@ export default function ClienteHistorial() {
             <div key={cita.id_cita || cita.id} className="cliente-history-item">
               <div>
                 <strong>{servicioCita(cita)}</strong>
-                <span>{fechaCita(cita)} - {barberoCita(cita)}</span>
+                <span>{fechaCita(cita)} - {barberoCita(cita)} - {totalCita(cita)}</span>
                 <p>{cita.observacion || cita.descripcion || 'Sin observaciones.'}</p>
               </div>
               <span className="badge badge-blue">{estadoCita(cita)}</span>

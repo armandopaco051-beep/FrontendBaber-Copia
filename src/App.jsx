@@ -18,6 +18,10 @@ import Promociones from './pages/admin/promociones';
 import DisponibilidadAdmin from './pages/admin/disponibilidad';
 import MetodosPago from './pages/admin/metodosPago';
 import PlanesComision from './pages/admin/planesComision';
+import Ventas from './pages/admin/ventas';
+import Caja from './pages/admin/caja';
+import MovimientosCaja from './pages/admin/movimientosCaja';
+import Reportes from './pages/admin/reportes';
 import Productos from './pages/admin/productos';
 import Insumos from './pages/admin/insumos';
 import Perfil      from './pages/admin/perfil';
@@ -75,12 +79,12 @@ export default function App() {
             <Route path="categorias-inventario" element={<Proximamente nombre="Gestionar categorias" />} />
             <Route path="productos" element={<Productos />} />
             <Route path="insumos" element={<Insumos />} />
-            <Route path="caja" element={<Proximamente nombre="Gestionar caja" />} />
-            <Route path="ventas" element={<Proximamente nombre="Gestionar ventas" />} />
-            <Route path="movimientos-caja" element={<Proximamente nombre="Gestionar movimientos de caja" />} />
+            <Route path="caja" element={<Caja />} />
+            <Route path="ventas" element={<Ventas />} />
+            <Route path="movimientos-caja" element={<MovimientosCaja />} />
             <Route path="comprobantes" element={<Proximamente nombre="Generar comprobante" />} />
             <Route path="notificaciones" element={<Proximamente nombre="Notificaciones" />} />
-            <Route path="reportes"    element={<Proximamente nombre="Reportes" />} />
+            <Route path="reportes"    element={<Reportes />} />
             <Route path="perfil"      element={<Perfil />} />
           </Route>
 
