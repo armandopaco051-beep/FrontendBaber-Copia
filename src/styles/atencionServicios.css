@@ -1,0 +1,132 @@
+.atencion-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.atencion-card {
+  margin-bottom: 24px;
+}
+
+.atencion-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.atencion-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+}
+
+.atencion-subtitle,
+.atencion-muted {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.atencion-pending-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.atencion-pending-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.atencion-pending-card strong,
+.atencion-pending-card span,
+.atencion-pending-card small {
+  display: block;
+}
+
+.atencion-pending-card strong,
+.atencion-name {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.atencion-pending-card span,
+.atencion-pending-card small {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.atencion-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 190px 190px;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.atencion-search {
+  max-width: none;
+}
+
+.atencion-empty {
+  color: #64748b;
+  text-align: center;
+  padding: 24px;
+}
+
+.atencion-ready {
+  margin-top: 6px;
+}
+
+.atencion-detail-list {
+  display: grid;
+  gap: 4px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.atencion-row-actions,
+.atencion-modal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.atencion-danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.atencion-modal {
+  max-width: 620px;
+}
+
+.atencion-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.atencion-modal-button {
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  .atencion-stats,
+  .atencion-pending-grid,
+  .atencion-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .atencion-header,
+  .atencion-pending-card,
+  .atencion-modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

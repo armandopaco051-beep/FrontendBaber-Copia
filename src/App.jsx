@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './auth/authContext';
 import PrivateRoute from './auth/PrivateRoute';
+import PermissionRoute from './auth/PermissionRoute';
 
 import Landing     from './pages/landing';
 import AdminLayout from './pages/admin/adminlayout';
@@ -13,6 +14,7 @@ import Bitacora    from './pages/admin/bitacora';
 import Horarios    from './pages/admin/horarios';
 import Asistencia  from './pages/admin/asistencia';
 import Servicios   from './pages/admin/servicios';
+import AtencionServicios from './pages/admin/atencionServicios';
 import Citas       from './pages/admin/citas';
 import Promociones from './pages/admin/promociones';
 import DisponibilidadAdmin from './pages/admin/disponibilidad';
@@ -22,6 +24,7 @@ import Ventas from './pages/admin/ventas';
 import Caja from './pages/admin/caja';
 import MovimientosCaja from './pages/admin/movimientosCaja';
 import Reportes from './pages/admin/reportes';
+import Notificaciones from './pages/admin/notificaciones';
 import Productos from './pages/admin/productos';
 import Insumos from './pages/admin/insumos';
 import Perfil      from './pages/admin/perfil';
@@ -48,7 +51,7 @@ export default function App() {
 
           {/* Admin (protegidas con JWT) */}
           <Route path="/admin" element={
-            <PrivateRoute allowedRoles={['administrador', 'barbero']} allowedRoleIds={[1, 2]} redirectTo="/cliente/inicio">
+            <PrivateRoute allowedRoles={['administrador', 'barbero', 'cajero']} allowedRoleIds={[1, 2, 4]} redirectTo="/cliente/inicio">
               <AdminLayout />
             </PrivateRoute>
           }>
@@ -56,35 +59,35 @@ export default function App() {
             <Route path="dashboard"   element={<Dashboard />} />
 
             {/* CU3 */ }
-            <Route path="usuarios"    element={<Usuarios />} />
+            <Route path="usuarios"    element={<PermissionRoute permiso="usuarios.ver"><Usuarios /></PermissionRoute>} />
             {/* CU4 */}
-            <Route path="roles"       element={<Roles />} />
+            <Route path="roles"       element={<PermissionRoute permiso="roles.ver"><Roles /></PermissionRoute>} />
             {/* CU5 */}
-            <Route path="barberos"    element={<Barberos />} />
-            <Route path="clientes"    element={<Clientes />} />
-            <Route path="bitacora"    element={<Bitacora />} />
+            <Route path="barberos"    element={<PermissionRoute permiso="barberos.ver"><Barberos /></PermissionRoute>} />
+            <Route path="clientes"    element={<PermissionRoute permiso="clientes.ver"><Clientes /></PermissionRoute>} />
+            <Route path="bitacora"    element={<PermissionRoute permiso="bitacora.ver"><Bitacora /></PermissionRoute>} />
 
             {/* Próximos ciclos */}
-            <Route path="servicios"   element={<Servicios />} />
-            <Route path="horarios"    element={<Horarios />} />
-            <Route path="citas"       element={<Citas />} />
-            <Route path="asistencia"  element={<Asistencia />} />
-            <Route path="promociones" element={<Promociones />} />
+            <Route path="servicios"   element={<PermissionRoute permiso="servicios.ver"><Servicios /></PermissionRoute>} />
+            <Route path="horarios"    element={<PermissionRoute permiso="horarios.ver"><Horarios /></PermissionRoute>} />
+            <Route path="citas"       element={<PermissionRoute permiso="citas.ver"><Citas /></PermissionRoute>} />
+            <Route path="asistencia"  element={<PermissionRoute permiso="asistencia.ver"><Asistencia /></PermissionRoute>} />
+            <Route path="promociones" element={<PermissionRoute permiso="promociones.ver"><Promociones /></PermissionRoute>} />
             <Route path="disponibilidad" element={<DisponibilidadAdmin />} />
-            <Route path="metodos-pago" element={<MetodosPago />} />
-            <Route path="planes-comision" element={<PlanesComision />} />
+            <Route path="metodos-pago" element={<PermissionRoute permiso="metodos_pago.ver"><MetodosPago /></PermissionRoute>} />
+            <Route path="planes-comision" element={<PermissionRoute permiso="comisiones.ver"><PlanesComision /></PermissionRoute>} />
             <Route path="pagos"       element={<Proximamente nombre="Pagos" />} />
             <Route path="inventario"  element={<Proximamente nombre="Inventario" />} />
-            <Route path="atencion-servicios" element={<Proximamente nombre="Registrar atencion de servicios" />} />
-            <Route path="categorias-inventario" element={<Proximamente nombre="Gestionar categorias" />} />
-            <Route path="productos" element={<Productos />} />
-            <Route path="insumos" element={<Insumos />} />
-            <Route path="caja" element={<Caja />} />
-            <Route path="ventas" element={<Ventas />} />
-            <Route path="movimientos-caja" element={<MovimientosCaja />} />
-            <Route path="comprobantes" element={<Proximamente nombre="Generar comprobante" />} />
-            <Route path="notificaciones" element={<Proximamente nombre="Notificaciones" />} />
-            <Route path="reportes"    element={<Reportes />} />
+            <Route path="atencion-servicios" element={<PermissionRoute permiso="atenciones.ver"><AtencionServicios /></PermissionRoute>} />
+            <Route path="categorias-inventario" element={<PermissionRoute permiso="inventario.ver"><Proximamente nombre="Gestionar categorias" /></PermissionRoute>} />
+            <Route path="productos" element={<PermissionRoute permiso="inventario.ver"><Productos /></PermissionRoute>} />
+            <Route path="insumos" element={<PermissionRoute permiso="inventario.ver"><Insumos /></PermissionRoute>} />
+            <Route path="caja" element={<PermissionRoute permiso="caja.ver"><Caja /></PermissionRoute>} />
+            <Route path="ventas" element={<PermissionRoute permiso="ventas.ver"><Ventas /></PermissionRoute>} />
+            <Route path="movimientos-caja" element={<PermissionRoute permiso="caja.movimientos.ver"><MovimientosCaja /></PermissionRoute>} />
+            <Route path="comprobantes" element={<PermissionRoute permiso="ventas.ver"><Proximamente nombre="Generar comprobante" /></PermissionRoute>} />
+            <Route path="notificaciones" element={<PermissionRoute permiso="notificaciones.ver"><Notificaciones /></PermissionRoute>} />
+            <Route path="reportes"    element={<PermissionRoute permiso="reportes.ver"><Reportes /></PermissionRoute>} />
             <Route path="perfil"      element={<Perfil />} />
           </Route>
 

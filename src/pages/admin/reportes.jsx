@@ -185,7 +185,7 @@ export default function Reportes() {
       api.get('inventario/categorias/'),
       api.get('inventario/marcas/'),
       api.get('ventas-caja/metodos-pago/'),
-      api.get('promociones/promociones/'),
+      api.get('citas/promociones/'),
     ]);
 
     setCatalogos({

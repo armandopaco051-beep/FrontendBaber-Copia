@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/authContext';
 import { useState } from 'react';
+import NotificationBell from '../../components/NotificationBell';
 
 const NAV = [
   { path: '/cliente/inicio', label: 'Inicio', icon: 'IN' },
@@ -69,7 +70,10 @@ export default function ClienteLayout() {
               <p>Reserva y consulta tu atencion sin entrar al panel administrativo.</p>
             </div>
           </div>
-          <div className="cliente-user-chip">{usuario?.correo || usuario?.rol || 'Cliente'}</div>
+          <div className="cliente-topbar-actions">
+            <NotificationBell />
+            <div className="cliente-user-chip">{usuario?.correo || usuario?.rol || 'Cliente'}</div>
+          </div>
         </header>
 
         <section className="cliente-body">

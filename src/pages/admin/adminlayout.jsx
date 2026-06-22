@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../auth/authContext';
+import NotificationBell from '../../components/NotificationBell';
 
 const NAV = [
   {
@@ -8,8 +9,8 @@ const NAV = [
     label: 'Gestion de Seguridad y Auditoria',
     icon: 'SG',
     items: [
-      { id: 'roles', label: 'CU04 Gestionar roles', path: '/admin/roles' },
-      { id: 'bitacora', label: 'CU17 Consultar bitacora', path: '/admin/bitacora' },
+      { id: 'roles', label: 'CU04 Gestionar roles', path: '/admin/roles', permiso: 'roles.ver' },
+      { id: 'bitacora', label: 'CU17 Consultar bitacora', path: '/admin/bitacora', permiso: 'bitacora.ver' },
     ],
   },
   {
@@ -17,8 +18,8 @@ const NAV = [
     label: 'Gestion de Usuarios y Personal',
     icon: 'UP',
     items: [
-      { id: 'usuarios', label: 'CU03 Gestionar usuarios', path: '/admin/usuarios' },
-      { id: 'barberos', label: 'CU05 Gestionar barberos', path: '/admin/barberos' },
+      { id: 'usuarios', label: 'CU03 Gestionar usuarios', path: '/admin/usuarios', permiso: 'usuarios.ver' },
+      { id: 'barberos', label: 'CU05 Gestionar barberos', path: '/admin/barberos', permiso: 'barberos.ver' },
     ],
   },
   {
@@ -26,7 +27,7 @@ const NAV = [
     label: 'Gestion de Clientes',
     icon: 'CL',
     items: [
-      { id: 'clientes', label: 'CU06 Gestionar clientes', path: '/admin/clientes' },
+      { id: 'clientes', label: 'CU06 Gestionar clientes', path: '/admin/clientes', permiso: 'clientes.ver' },
     ],
   },
   {
@@ -34,10 +35,10 @@ const NAV = [
     label: 'Gestion de Servicios y Atencion',
     icon: 'SA',
     items: [
-      { id: 'asistencia', label: 'CU09 Gestionar asistencia', path: '/admin/asistencia' },
-      { id: 'horarios', label: 'CU08 Gestionar horarios laborales', path: '/admin/horarios' },
-      { id: 'servicios', label: 'CU10 Gestionar servicios', path: '/admin/servicios' },
-      { id: 'atencion-servicios', label: 'Registrar atencion de servicios', path: '/admin/atencion-servicios' },
+      { id: 'asistencia', label: 'CU09 Gestionar asistencia', path: '/admin/asistencia', permiso: 'asistencia.ver' },
+      { id: 'horarios', label: 'CU08 Gestionar horarios laborales', path: '/admin/horarios', permiso: 'horarios.ver' },
+      { id: 'servicios', label: 'CU10 Gestionar servicios', path: '/admin/servicios', permiso: 'servicios.ver' },
+      { id: 'atencion-servicios', label: 'Registrar atencion de servicios', path: '/admin/atencion-servicios', permiso: 'atenciones.ver' },
     ],
   },
   {
@@ -45,10 +46,10 @@ const NAV = [
     label: 'Gestion de Agenda y Citas',
     icon: 'AC',
     items: [
-      { id: 'citas', label: 'CU11 Gestionar citas', path: '/admin/citas' },
-      { id: 'promociones', label: 'CU12 Gestionar promociones', path: '/admin/promociones' },
+      { id: 'citas', label: 'CU11 Gestionar citas', path: '/admin/citas', permiso: 'citas.ver' },
+      { id: 'promociones', label: 'CU12 Gestionar promociones', path: '/admin/promociones', permiso: 'promociones.ver' },
       { id: 'disponibilidad', label: 'CU24 Consultar disponibilidad de horarios', path: '/admin/disponibilidad' },
-      { id: 'notificaciones', label: 'CU16 Gestionar notificaciones', path: '/admin/notificaciones' },
+      { id: 'notificaciones', label: 'CU16 Gestionar notificaciones', path: '/admin/notificaciones', permiso: 'notificaciones.ver' },
     ],
   },
   {
@@ -56,9 +57,9 @@ const NAV = [
     label: 'Gestion de Inventario',
     icon: 'GI',
     items: [
-      { id: 'categorias-inventario', label: 'CU22 Gestionar categorias', path: '/admin/categorias-inventario' },
-      { id: 'productos', label: 'CU15 Gestionar productos', path: '/admin/productos' },
-      { id: 'insumos', label: 'CU16 Gestionar insumos', path: '/admin/insumos' },
+      { id: 'categorias-inventario', label: 'CU22 Gestionar categorias', path: '/admin/categorias-inventario', permiso: 'inventario.ver' },
+      { id: 'productos', label: 'CU15 Gestionar productos', path: '/admin/productos', permiso: 'inventario.ver' },
+      { id: 'insumos', label: 'CU16 Gestionar insumos', path: '/admin/insumos', permiso: 'inventario.ver' },
     ],
   },
   {
@@ -66,12 +67,12 @@ const NAV = [
     label: 'Gestion de Ventas y Caja',
     icon: 'VC',
     items: [
-      { id: 'metodos-pago', label: 'CU13 Gestionar metodos de pago', path: '/admin/metodos-pago' },
-      { id: 'planes-comision', label: 'CU14 Gestionar planes de comision', path: '/admin/planes-comision' },
-      { id: 'caja', label: 'CU18 Gestionar caja', path: '/admin/caja' },
-      { id: 'ventas', label: 'CU20 Gestionar ventas', path: '/admin/ventas' },
-      { id: 'movimientos-caja', label: 'CU21 Gestionar movimientos de caja', path: '/admin/movimientos-caja' },
-      { id: 'comprobantes', label: 'CU25 Generar comprobante', path: '/admin/comprobantes' },
+      { id: 'metodos-pago', label: 'CU13 Gestionar metodos de pago', path: '/admin/metodos-pago', permiso: 'metodos_pago.ver' },
+      { id: 'planes-comision', label: 'CU14 Gestionar planes de comision', path: '/admin/planes-comision', permiso: 'comisiones.ver' },
+      { id: 'caja', label: 'CU18 Gestionar caja', path: '/admin/caja', permiso: 'caja.ver' },
+      { id: 'ventas', label: 'CU20 Gestionar ventas', path: '/admin/ventas', permiso: 'ventas.ver' },
+      { id: 'movimientos-caja', label: 'CU21 Gestionar movimientos de caja', path: '/admin/movimientos-caja', permiso: 'caja.movimientos.ver' },
+      { id: 'comprobantes', label: 'CU25 Generar comprobante', path: '/admin/comprobantes', permiso: 'ventas.ver' },
     ],
   },
   {
@@ -79,7 +80,7 @@ const NAV = [
     label: 'Gestion de Reportes Gerenciales',
     icon: 'RG',
     items: [
-      { id: 'reportes', label: 'CU19 Generar reportes', path: '/admin/reportes' },
+      { id: 'reportes', label: 'CU19 Generar reportes', path: '/admin/reportes', permiso: 'reportes.ver' },
     ],
   },
 ];
@@ -128,7 +129,7 @@ function estadoInicial(currentId) {
 // AdminLayout arma la estructura privada del administrador:
 // barra lateral por paquetes de casos de uso, topbar, cierre de sesion y Outlet.
 export default function AdminLayout() {
-  const { usuario, logout } = useAuth();
+  const { usuario, logout, puede } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const currentId = location.pathname.split('/admin/')[1] || 'dashboard';
@@ -178,6 +179,8 @@ export default function AdminLayout() {
           <div className="nav-section-label">Paquetes de casos de uso</div>
 
           {NAV.map(grupo => {
+            const itemsVisibles = grupo.items.filter(item => !item.permiso || puede(item.permiso));
+            if (itemsVisibles.length === 0) return null;
             const activo = grupoActivo(grupo, currentId);
             const abierto = openGroups[grupo.id] || activo;
 
@@ -191,7 +194,7 @@ export default function AdminLayout() {
 
                 {abierto && (
                   <div className="nav-package-items">
-                    {grupo.items.map(item => (
+                    {itemsVisibles.map(item => (
                       <button
                         key={item.id}
                         className={`nav-case-item ${currentId === item.id ? 'active' : ''}`}
@@ -241,6 +244,7 @@ export default function AdminLayout() {
           </div>
           <div className="topbar-right">
             <input className="admin-search" placeholder="Buscar..." />
+            <NotificationBell />
             <div className="user-chip">
               {usuario?.nombre || 'Administrador'}
             </div>

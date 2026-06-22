@@ -23,6 +23,7 @@ function getUsuarioFromToken(token) {
       apellido: payload.apellido,
       rol: payload.rol || payload.role,
       id_rol: payload.id_rol || payload.rol_id || payload.role_id,
+      permisos: payload.permisos || [],
     };
   } catch {
     localStorage.clear();
@@ -31,7 +32,15 @@ function getUsuarioFromToken(token) {
 }
 
 function getStoredUsuario() {
-  return getUsuarioFromToken(localStorage.getItem('access_token'));
+  const tokenUser = getUsuarioFromToken(localStorage.getItem('access_token'));
+  if (!tokenUser) return null;
+
+  try {
+    const stored = JSON.parse(localStorage.getItem('usuario') || '{}');
+    return { ...tokenUser, ...stored };
+  } catch {
+    return tokenUser;
+  }
 }
 
 // AuthProvider centraliza sesion: login, logout y usuario actual.
@@ -55,6 +64,8 @@ export function AuthProvider({ children }) {
 
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
+    localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
+    localStorage.setItem('permisos', JSON.stringify(usuarioNormalizado.permisos || []));
     setUsuario(usuarioNormalizado);
     return usuarioNormalizado;
   };
@@ -72,7 +83,20 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ usuario, login, logout, cargando }}>
+    <AuthContext.Provider value={{
+      usuario,
+      login,
+      logout,
+      cargando,
+      permisos: usuario?.permisos || [],
+      puede: (permiso) => {
+        if (!permiso) return true;
+        if (String(usuario?.rol || '').toLowerCase() === 'administrador') return true;
+        const permisos = usuario?.permisos;
+        if (!Array.isArray(permisos)) return false;
+        return permisos.includes(permiso);
+      },
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,14 @@
+.roles-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 18px;
+}
+
 .roles-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 14px;
   margin-bottom: 24px;
 }
 
@@ -47,4 +54,136 @@
 
 .roles-modal-button {
   flex: 1;
+}
+
+.roles-list {
+  display: grid;
+  gap: 10px;
+}
+
+.roles-list-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roles-list-item.active {
+  border-color: #d4af37;
+  background: #fffbeb;
+}
+
+.roles-list-item strong,
+.roles-list-item span {
+  display: block;
+}
+
+.roles-list-item strong {
+  color: #0f172a;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.roles-list-item span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.roles-permission-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.roles-permission-group {
+  border: 1px solid #111827;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.roles-permission-head {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  background: #ffffff;
+  color: #0f172a;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  font-weight: 800;
+  text-align: left;
+}
+
+.roles-permission-head strong {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.roles-permission-head em {
+  font-style: normal;
+  font-size: 18px;
+}
+
+.roles-permission-items {
+  border-top: 1px solid #e5e7eb;
+}
+
+.roles-permission-check {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #0f172a;
+}
+
+.roles-permission-check:last-child {
+  border-bottom: 0;
+}
+
+.roles-permission-check input {
+  width: 16px;
+  height: 16px;
+}
+
+.roles-permission-check span {
+  font-weight: 700;
+}
+
+.roles-permission-check small {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.roles-permission-all {
+  background: #f8fafc;
+}
+
+@media (max-width: 980px) {
+  .roles-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .roles-header,
+  .roles-modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .roles-permission-check {
+    grid-template-columns: auto 1fr;
+  }
+
+  .roles-permission-check small {
+    grid-column: 2;
+  }
 }

@@ -165,6 +165,12 @@
   font-size: 13px;
 }
 
+.cliente-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .cliente-body {
   padding: 28px;
 }
@@ -498,6 +504,7 @@
   }
 
   .cliente-user-chip,
+  .cliente-topbar-actions,
   .cliente-search-input {
     margin-top: 12px;
   }

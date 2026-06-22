@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
+import { useAuth } from '../../auth/authContext';
 
 const EMPTY = { codigo: '', nombre: '', apellido: '', telefono: '', correo: '', password: '', id_rol: '' };
 
@@ -28,6 +29,7 @@ function formatApiError(data) {
 // Consume seguridad/usuarios/ para listar, crear, editar y eliminar usuarios,
 // y seguridad/roles/ para asignar un rol al usuario.
 export default function Usuarios() {
+  const { puede } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
   const [roles, setRoles] = useState([]);
   const [buscar, setBuscar] = useState('');
@@ -42,14 +44,21 @@ export default function Usuarios() {
   // READ: carga usuarios y roles para llenar la tabla y el select de roles.
   const cargar = async () => {
     try {
-      const [u, r] = await Promise.all([
-        api.get('seguridad/usuarios/'),
-        api.get('seguridad/roles/'),
-      ]);
+      const u = await api.get('seguridad/usuarios/');
       setUsuarios(u.data);
-      setRoles(r.data);
-    } catch {
-      showToast('Error al cargar datos', 'error');
+    } catch (error) {
+      showToast(formatApiError(error.response?.data) || 'Error al cargar usuarios', 'error');
+    }
+
+    if (puede('roles.ver')) {
+      try {
+        const r = await api.get('seguridad/roles/');
+        setRoles(r.data);
+      } catch {
+        setRoles([]);
+      }
+    } else {
+      setRoles([]);
     }
   };
 
@@ -57,6 +66,7 @@ export default function Usuarios() {
 
   // Prepara el modal de creacion limpiando el formulario.
   const abrirCrear = () => {
+    if (!puede('usuarios.crear')) return showToast('No tienes permiso para crear usuarios.', 'error');
     setForm({ ...EMPTY });
     setModal('crear');
   };
@@ -67,6 +77,7 @@ export default function Usuarios() {
 
   // Carga los datos del usuario seleccionado en el formulario de edicion.
   const abrirEditar = (u) => {
+    if (!puede('usuarios.editar')) return showToast('No tienes permiso para editar usuarios.', 'error');
     setForm({
       codigo: u.codigo,
       nombre: u.nombre,
@@ -92,6 +103,8 @@ export default function Usuarios() {
 
   // CREATE/UPDATE: si el modal es crear hace POST; si es editar hace PUT.
   const guardar = async () => {
+    if (modal === 'crear' && !puede('usuarios.crear')) return showToast('No tienes permiso para crear usuarios.', 'error');
+    if (modal === 'editar' && !puede('usuarios.editar')) return showToast('No tienes permiso para editar usuarios.', 'error');
     setLoading(true);
     try {
       if (modal === 'crear') {
@@ -114,6 +127,7 @@ export default function Usuarios() {
 
   // DELETE: elimina el usuario por codigo y refresca la tabla.
   const eliminar = async (codigo) => {
+    if (!puede('usuarios.eliminar')) return showToast('No tienes permiso para eliminar usuarios.', 'error');
     if (!confirm('Eliminar este usuario?')) return;
 
     try {
@@ -139,7 +153,7 @@ export default function Usuarios() {
             <h3 className="usuarios-title">Gestion de usuarios</h3>
             <p className="usuarios-subtitle">Crea, edita y controla accesos del sistema.</p>
           </div>
-          <button className="btn-gold" onClick={abrirCrear}>+ Nuevo usuario</button>
+          {puede('usuarios.crear') && <button className="btn-gold" onClick={abrirCrear}>+ Nuevo usuario</button>}
         </div>
 
         <div className="search-box usuarios-search">
@@ -162,8 +176,8 @@ export default function Usuarios() {
                 <td><span className="badge badge-green">Activo</span></td>
                 <td className="usuarios-actions">
                   <button className="btn-outline" onClick={() => abrirVer(u)}>Ver</button>
-                  <button className="btn-outline" onClick={() => abrirEditar(u)}>Editar</button>
-                  <button className="btn-outline usuarios-delete" onClick={() => eliminar(u.codigo)}>Eliminar</button>
+                  {puede('usuarios.editar') && <button className="btn-outline" onClick={() => abrirEditar(u)}>Editar</button>}
+                  {puede('usuarios.eliminar') && <button className="btn-outline usuarios-delete" onClick={() => eliminar(u.codigo)}>Eliminar</button>}
                 </td>
               </tr>
             ))}
@@ -186,7 +200,7 @@ export default function Usuarios() {
               </div>
               <div className="form-group">
                 <label>Rol</label>
-                <select className="input-field" value={form.id_rol} autoComplete="off" onChange={e => setForm({ ...form, id_rol: Number(e.target.value) })}>
+                <select className="input-field" value={form.id_rol} autoComplete="off" onChange={e => setForm({ ...form, id_rol: Number(e.target.value) })} disabled={!puede('roles.ver')}>
                   <option value="">Seleccionar rol</option>
                   {roles.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
                 </select>
