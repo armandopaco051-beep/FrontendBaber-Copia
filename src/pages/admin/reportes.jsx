@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+
 import api from '../../api/axiosConfig';
+import { diagnosticarReporteVoz, interpretarReportePorTexto } from '../../api/reportesVozApi';
+import GrabadorVozReporte from '../../components/GrabadorVozReporte';
 import { formatApiError } from '../../utils/apiError';
 
 const FORMATOS = [
@@ -103,6 +106,8 @@ const EMPTY_FILTROS = {
   tipo_descuento: '',
 };
 
+const CAMPOS_BOOLEANOS = new Set(['promocion_aplicada', 'con_diferencia', 'stock_bajo', 'sin_stock']);
+
 function Toast({ msg, type, onClose }) {
   useEffect(() => {
     const t = setTimeout(onClose, 3000);
@@ -142,6 +147,67 @@ function descargarBlob(data, nombreArchivo) {
   window.URL.revokeObjectURL(url);
 }
 
+function obtenerReportePorId(id) {
+  return REPORTES.find(reporte => reporte.id === id) || REPORTES[0];
+}
+
+function construirParamsReporte(reporte, formato, filtros) {
+  const params = {
+    formato,
+    fecha_inicio: filtros.fecha_inicio,
+    fecha_fin: filtros.fecha_fin,
+    estado: filtros.estado,
+    estado_venta: filtros.estado_venta,
+    estado_caja: filtros.estado_caja,
+    estado_movimiento: filtros.estado_movimiento,
+    estado_producto: filtros.estado_producto,
+    estado_promocion: filtros.estado_promocion,
+    cliente: filtros.cliente,
+    cajero: filtros.cajero,
+    barbero: filtros.barbero,
+    responsable: filtros.responsable,
+    id_metodo_pago: filtros.id_metodo_pago,
+    tipo_item: filtros.tipo_item,
+    id_servicio: filtros.id_servicio,
+    id_producto: filtros.id_producto,
+    id_categoria_servicio: filtros.id_categoria_servicio,
+    id_categoria_producto: filtros.id_categoria_producto,
+    id_marca: filtros.id_marca,
+    tipo_producto: filtros.tipo_producto,
+    tipo_movimiento: filtros.tipo_movimiento,
+    id_promocion: filtros.id_promocion,
+    promocion_aplicada: filtros.promocion_aplicada,
+    con_diferencia: filtros.con_diferencia,
+    stock_bajo: filtros.stock_bajo,
+    sin_stock: filtros.sin_stock,
+    tipo_descuento: filtros.tipo_descuento,
+  };
+
+  if (reporte.filtros.includes('estado_venta_pagada')) params.estado_venta = 'PAGADA';
+  return limpiarParams(params);
+}
+
+function normalizarFiltrosVozParaEstado(filtrosDetectados = {}) {
+  const filtros = { ...EMPTY_FILTROS };
+
+  Object.entries(filtrosDetectados).forEach(([key, value]) => {
+    if (!(key in filtros)) return;
+    if (CAMPOS_BOOLEANOS.has(key)) {
+      filtros[key] = value ? 'true' : 'false';
+      return;
+    }
+    filtros[key] = value === null || value === undefined ? '' : String(value);
+  });
+
+  return filtros;
+}
+
+function formatearValorFiltro(valor) {
+  if (valor === true) return 'Si';
+  if (valor === false) return 'No';
+  return String(valor);
+}
+
 export default function Reportes() {
   const [tipoReporte, setTipoReporte] = useState('ventas');
   const [formato, setFormato] = useState('pdf');
@@ -161,8 +227,13 @@ export default function Reportes() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [resultadoComando, setResultadoComando] = useState(null);
+  const [diagnostico, setDiagnostico] = useState(null);
+  const [diagnosticoLoading, setDiagnosticoLoading] = useState(false);
+  const [textoConsulta, setTextoConsulta] = useState('');
+  const [textoLoading, setTextoLoading] = useState(false);
 
-  const reporteActual = REPORTES.find(reporte => reporte.id === tipoReporte) || REPORTES[0];
+  const reporteActual = obtenerReportePorId(tipoReporte);
   const showToast = (msg, type = 'success') => setToast({ msg, type });
 
   const cargarCatalogos = async () => {
@@ -215,77 +286,127 @@ export default function Reportes() {
     setFiltros(actual => ({ ...actual, [key]: value }));
   };
 
-  const paramsReporte = useMemo(() => {
-    const params = {
-      formato,
-      fecha_inicio: filtros.fecha_inicio,
-      fecha_fin: filtros.fecha_fin,
-      estado: filtros.estado,
-      estado_venta: filtros.estado_venta,
-      estado_caja: filtros.estado_caja,
-      estado_movimiento: filtros.estado_movimiento,
-      estado_producto: filtros.estado_producto,
-      estado_promocion: filtros.estado_promocion,
-      cliente: filtros.cliente,
-      cajero: filtros.cajero,
-      barbero: filtros.barbero,
-      responsable: filtros.responsable,
-      id_metodo_pago: filtros.id_metodo_pago,
-      tipo_item: filtros.tipo_item,
-      id_servicio: filtros.id_servicio,
-      id_producto: filtros.id_producto,
-      id_categoria_servicio: filtros.id_categoria_servicio,
-      id_categoria_producto: filtros.id_categoria_producto,
-      id_marca: filtros.id_marca,
-      tipo_producto: filtros.tipo_producto,
-      tipo_movimiento: filtros.tipo_movimiento,
-      id_promocion: filtros.id_promocion,
-      promocion_aplicada: filtros.promocion_aplicada,
-      con_diferencia: filtros.con_diferencia,
-      stock_bajo: filtros.stock_bajo,
-      sin_stock: filtros.sin_stock,
-      tipo_descuento: filtros.tipo_descuento,
-    };
+  const paramsReporte = useMemo(
+    () => construirParamsReporte(reporteActual, formato, filtros),
+    [filtros, formato, reporteActual],
+  );
 
-    if (reporteActual.filtros.includes('estado_venta_pagada')) params.estado_venta = 'PAGADA';
-    return limpiarParams(params);
-  }, [filtros, formato, reporteActual.filtros]);
+  const generarReporte = async (opciones = {}) => {
+    const reporte = obtenerReportePorId(opciones.tipoReporte || tipoReporte);
+    const formatoSeleccionado = opciones.formato || formato;
+    const filtrosSeleccionados = opciones.filtros || filtros;
 
-  const generarReporte = async () => {
-    if (!formato) return showToast('Selecciona PDF o Excel.', 'error');
+    if (!formatoSeleccionado) {
+      showToast('Selecciona PDF o Excel.', 'error');
+      return false;
+    }
 
     setLoading(true);
     try {
-      const response = await api.get(reporteActual.endpoint, {
-        params: paramsReporte,
+      const response = await api.get(reporte.endpoint, {
+        params: construirParamsReporte(reporte, formatoSeleccionado, filtrosSeleccionados),
         responseType: 'blob',
       });
-      const extension = formato === 'excel' ? 'xlsx' : 'pdf';
-      descargarBlob(response.data, `${reporteActual.id}-${new Date().toISOString().slice(0, 10)}.${extension}`);
-      showToast(`Reporte ${reporteActual.nombre} generado correctamente.`);
+      const extension = formatoSeleccionado === 'excel' ? 'xlsx' : 'pdf';
+      descargarBlob(response.data, `${reporte.id}-${new Date().toISOString().slice(0, 10)}.${extension}`);
+      showToast(`Reporte ${reporte.nombre} generado correctamente.`);
+      return true;
     } catch (error) {
-      const data = error.response?.data;
-      showToast(formatApiError(data, 'No se pudo generar el reporte. Verifica que el endpoint exista en backend.'), 'error');
+      showToast(formatApiError(error.response?.data, 'No se pudo generar el reporte. Verifica que el endpoint exista en backend.'), 'error');
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const cargarVistaPrevia = async () => {
+  const cargarVistaPrevia = async (opciones = {}) => {
+    const reporte = obtenerReportePorId(opciones.tipoReporte || tipoReporte);
+    const formatoSeleccionado = opciones.formato || formato;
+    const filtrosSeleccionados = opciones.filtros || filtros;
+
     setPreviewLoading(true);
     try {
-      const endpoint = reporteActual.endpoint.replace(/\/$/, '/preview/');
-      const params = { ...paramsReporte };
+      const endpoint = reporte.endpoint.replace(/\/$/, '/preview/');
+      const params = { ...construirParamsReporte(reporte, formatoSeleccionado, filtrosSeleccionados) };
       delete params.formato;
       const response = await api.get(endpoint, { params });
-      const columnas = response.data?.columnas || response.data?.columns || reporteActual.columnas;
+      const columnas = response.data?.columnas || response.data?.columns || reporte.columnas;
       const filas = response.data?.filas || response.data?.rows || response.data?.datos || response.data?.results || [];
       setPreview({ columnas, filas });
       showToast('Vista previa cargada correctamente.');
+      return true;
     } catch (error) {
       showToast(formatApiError(error.response?.data, 'No se pudo cargar la vista previa. El backend debe exponer /preview/ para este reporte.'), 'error');
+      return false;
     } finally {
       setPreviewLoading(false);
+    }
+  };
+
+  const aplicarResultadoInterpretado = async (resultado) => {
+    setResultadoComando(resultado);
+
+    if (resultado.accion === 'needs_clarification' || !resultado.tipo_reporte) {
+      showToast(resultado.mensaje, 'error');
+      return;
+    }
+
+    const filtrosDetectados = normalizarFiltrosVozParaEstado(resultado.filtros_detectados);
+    const formatoDetectado = resultado.formato || formato;
+
+    setTipoReporte(resultado.tipo_reporte);
+    setFormato(formatoDetectado);
+    setFiltros(filtrosDetectados);
+    setPreview({ columnas: [], filas: [] });
+
+    if (resultado.accion === 'download') {
+      await generarReporte({
+        tipoReporte: resultado.tipo_reporte,
+        formato: formatoDetectado,
+        filtros: filtrosDetectados,
+      });
+      return;
+    }
+
+    await cargarVistaPrevia({
+      tipoReporte: resultado.tipo_reporte,
+      formato: formatoDetectado,
+      filtros: filtrosDetectados,
+    });
+  };
+
+  const ejecutarDiagnostico = async () => {
+    setDiagnosticoLoading(true);
+    try {
+      const response = await diagnosticarReporteVoz();
+      setDiagnostico(response.data);
+      showToast('Diagnóstico de voz obtenido correctamente.');
+    } catch (error) {
+      setDiagnostico(null);
+      showToast(
+        `El frontend no está llegando al backend local. Revise Vite proxy o sesión. ${formatApiError(error.response?.data, '')}`.trim(),
+        'error',
+      );
+    } finally {
+      setDiagnosticoLoading(false);
+    }
+  };
+
+  const ejecutarTexto = async () => {
+    const consulta = textoConsulta.trim();
+    if (!consulta) {
+      showToast('Ingresa un comando para probar la interpretación por texto.', 'error');
+      return;
+    }
+
+    setTextoLoading(true);
+    try {
+      const response = await interpretarReportePorTexto(consulta);
+      await aplicarResultadoInterpretado(response.data);
+    } catch (error) {
+      showToast(formatApiError(error.response?.data, 'No se pudo interpretar el comando por texto.'), 'error');
+    } finally {
+      setTextoLoading(false);
     }
   };
 
@@ -313,6 +434,7 @@ export default function Reportes() {
           <select className="input-field" value={filtros.estado_venta} onChange={e => setFiltro('estado_venta', e.target.value)}>
             <option value="">Todas</option>
             <option value="BORRADOR">Borrador</option>
+            <option value="PENDIENTE_PAGO">Pendiente de pago</option>
             <option value="PAGADA">Pagada</option>
             <option value="ANULADA">Anulada</option>
           </select>
@@ -532,6 +654,103 @@ export default function Reportes() {
           <button className="btn-gold" onClick={generarReporte} disabled={loading}>{loading ? 'Generando...' : 'Generar reporte'}</button>
         </div>
 
+        <div className="reportes-voz-card">
+          <div className="reportes-panel-head">
+            <div>
+              <h4>Consulta por voz</h4>
+              <p>Todo el flujo usa el mismo origen `/api` del frontend y Vite lo proxya al backend local para probarlo con un solo túnel ngrok.</p>
+            </div>
+            <button className="btn-outline" type="button" onClick={ejecutarDiagnostico} disabled={diagnosticoLoading}>
+              {diagnosticoLoading ? 'Probando backend...' : 'Diagnóstico de voz'}
+            </button>
+          </div>
+
+          <GrabadorVozReporte onResultado={aplicarResultadoInterpretado} />
+
+          <div className="reportes-voz-text-card">
+            <Campo label="Probar comando por texto">
+              <input
+                className="input-field"
+                value={textoConsulta}
+                onChange={e => setTextoConsulta(e.target.value)}
+                placeholder="Mostrar ventas de hoy"
+              />
+            </Campo>
+            <button className="btn-outline" type="button" onClick={ejecutarTexto} disabled={textoLoading}>
+              {textoLoading ? 'Interpretando...' : 'Interpretar comando'}
+            </button>
+          </div>
+
+          {diagnostico ? (
+            <div className="reportes-voz-diagnostic">
+              <div className="reportes-voz-grid">
+                <div>
+                  <span>Backend</span>
+                  <strong>{diagnostico.backend}</strong>
+                </div>
+                <div>
+                  <span>Módulo</span>
+                  <strong>{diagnostico.modulo}</strong>
+                </div>
+                <div>
+                  <span>Groq configurado</span>
+                  <strong>{diagnostico.groq_configurado ? 'true' : 'false'}</strong>
+                </div>
+                <div>
+                  <span>Modelo</span>
+                  <strong>{diagnostico.modelo}</strong>
+                </div>
+              </div>
+              <div className="reportes-voz-summary">
+                <span>Backend alcanzado: {diagnostico.backend}. Base URL Groq: {diagnostico.groq_base_url}</span>
+              </div>
+            </div>
+          ) : null}
+
+          {resultadoComando ? (
+            <div className="reportes-voz-result">
+              <div className="reportes-voz-grid">
+                <div>
+                  <span>Modo</span>
+                  <strong>{resultadoComando.modo || '-'}</strong>
+                </div>
+                <div>
+                  <span>Acción</span>
+                  <strong>{resultadoComando.accion || '-'}</strong>
+                </div>
+                <div>
+                  <span>Reporte</span>
+                  <strong>{resultadoComando.tipo_reporte ? obtenerReportePorId(resultadoComando.tipo_reporte).nombre : 'Sin coincidencia'}</strong>
+                </div>
+                <div>
+                  <span>Formato</span>
+                  <strong>{resultadoComando.formato ? resultadoComando.formato.toUpperCase() : 'Sin formato'}</strong>
+                </div>
+              </div>
+
+              <div className="reportes-voz-summary">
+                <span>{resultadoComando.mensaje}</span>
+              </div>
+
+              <div className="reportes-voz-filters">
+                <h4>Resultado interpretado</h4>
+                <div className="reportes-voz-transcription">
+                  <strong>Transcripción:</strong> {resultadoComando.transcripcion || '-'}
+                </div>
+                {Object.keys(resultadoComando.filtros_detectados || {}).length === 0 ? (
+                  <div className="ventas-caja-empty">No se detectaron filtros adicionales.</div>
+                ) : (
+                  <div className="reportes-columns-grid">
+                    {Object.entries(resultadoComando.filtros_detectados || {}).map(([key, value]) => (
+                      <span key={key}>{key}: {formatearValorFiltro(value)}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
         <div className="reportes-layout">
           <div className="reportes-list">
             {REPORTES.map(reporte => (
@@ -579,7 +798,7 @@ export default function Reportes() {
                 <button className="btn-outline" onClick={cargarVistaPrevia} disabled={previewLoading}>
                   {previewLoading ? 'Cargando datos...' : 'Ver datos'}
                 </button>
-                <span>Usa los filtros actuales y muestra la informacion antes de generar PDF o Excel.</span>
+                <span>Usa los filtros actuales y muestra la información antes de generar PDF o Excel.</span>
               </div>
             </div>
 
@@ -611,7 +830,7 @@ export default function Reportes() {
             </div>
 
             <div className="reportes-preview">
-              <h4>Parametros que se enviaran al backend</h4>
+              <h4>Parámetros que se enviarán al backend</h4>
               <pre>{JSON.stringify(paramsReporte, null, 2)}</pre>
             </div>
           </div>

@@ -363,6 +363,102 @@
   padding: 16px;
 }
 
+.reportes-voz-card {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 16px;
+}
+
+.reportes-voz-controls {
+  display: grid;
+  gap: 12px;
+}
+
+.reportes-voz-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reportes-voz-status,
+.reportes-voz-error,
+.reportes-voz-summary {
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.reportes-voz-status,
+.reportes-voz-summary {
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.reportes-voz-error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.reportes-voz-result {
+  display: grid;
+  gap: 12px;
+}
+
+.reportes-voz-text-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.reportes-voz-diagnostic {
+  display: grid;
+  gap: 12px;
+}
+
+.reportes-voz-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reportes-voz-grid div,
+.reportes-voz-filters {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.reportes-voz-grid span,
+.reportes-voz-filters h4 {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.reportes-voz-grid strong {
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.reportes-voz-transcription {
+  color: #334155;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.reportes-voz-transcription strong {
+  color: #0f172a;
+}
+
 .reportes-panel-head {
   display: flex;
   justify-content: space-between;
@@ -550,6 +646,8 @@
   .movimientos-detail-grid,
   .reportes-layout,
   .reportes-filter-grid,
+  .reportes-voz-grid,
+  .reportes-voz-text-card,
   .ventas-detail-grid,
   .ventas-payment-summary,
   .ventas-pago-row {
