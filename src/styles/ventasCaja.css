@@ -160,6 +160,261 @@
   margin-bottom: 1rem;
 }
 
+.ventas-pago-modal {
+  max-width: 980px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.ventas-pay-mode {
+  display: inline-flex;
+  gap: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.ventas-pay-mode button {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 9px 14px;
+}
+
+.ventas-pay-mode button.active {
+  background: #d4af37;
+  color: #111827;
+}
+
+.ventas-pay-mode button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ventas-stripe-flow {
+  display: grid;
+  gap: 14px;
+}
+
+.ventas-stripe-start,
+.ventas-stripe-status,
+.stripe-config-warning {
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  padding: 14px;
+}
+
+.ventas-stripe-start h4 {
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.ventas-stripe-start p {
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.45;
+  margin-bottom: 12px;
+}
+
+.stripe-gateway {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+  border: 1px solid #d8e1ee;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.stripe-summary-panel {
+  position: relative;
+  min-height: 520px;
+  background:
+    linear-gradient(90deg, rgba(1, 31, 63, 0.9), rgba(1, 31, 63, 0.62)),
+    linear-gradient(135deg, #0b1d33, #12385b);
+  color: #ffffff;
+}
+
+.stripe-summary-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 520px;
+  padding: 44px 38px;
+}
+
+.stripe-eyebrow {
+  color: #d4af37;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.stripe-summary-content h2 {
+  color: #ffffff;
+  font-size: 38px;
+  line-height: 1.05;
+  margin: 16px 0;
+}
+
+.stripe-summary-content p {
+  color: #dbeafe;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 340px;
+}
+
+.stripe-sale-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  margin: 24px 0 18px;
+  padding: 18px;
+}
+
+.stripe-sale-card small {
+  display: block;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.stripe-sale-card strong {
+  color: #001f3f;
+  font-size: 14px;
+}
+
+.stripe-total-row {
+  grid-column: 1 / -1;
+  border-top: 1px solid #dbe4ef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+}
+
+.stripe-total-row strong {
+  color: #b45309;
+  font-size: 26px;
+}
+
+.stripe-protected-text {
+  color: #bfdbfe;
+  font-size: 11px;
+}
+
+.stripe-form-panel {
+  background: #ffffff;
+  padding: 26px;
+}
+
+.stripe-form-title {
+  background: #001f3f;
+  color: #ffffff;
+  font-family: 'Sora', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin: -26px -26px 20px;
+  padding: 15px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.stripe-card-holder {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.stripe-card-holder label {
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.stripe-secure-line {
+  color: #003b74;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.stripe-secure-line::before {
+  content: 'Seguro';
+  display: inline-block;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #047857;
+  font-size: 10px;
+  margin-right: 8px;
+  padding: 3px 7px;
+}
+
+.stripe-card-element {
+  border: 1px solid #d8e1ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+  margin-bottom: 16px;
+  padding: 14px;
+}
+
+.stripe-test-note,
+.stripe-message {
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 16px;
+  padding: 12px;
+}
+
+.stripe-test-note,
+.stripe-message.info {
+  border: 1px solid #86efac;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.stripe-message.error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.stripe-pay-button {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: #001f3f;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+  margin-top: 18px;
+  padding: 14px 18px;
+}
+
+.stripe-pay-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
 .ventas-cita-preview {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -650,8 +905,32 @@
   .reportes-voz-text-card,
   .ventas-detail-grid,
   .ventas-payment-summary,
-  .ventas-pago-row {
+  .ventas-pago-row,
+  .stripe-gateway,
+  .stripe-sale-card {
     grid-template-columns: 1fr;
+  }
+
+  .ventas-pay-mode {
+    display: grid;
+  }
+
+  .stripe-summary-panel,
+  .stripe-summary-content {
+    min-height: auto;
+  }
+
+  .stripe-summary-content,
+  .stripe-form-panel {
+    padding: 22px;
+  }
+
+  .stripe-summary-content h2 {
+    font-size: 30px;
+  }
+
+  .stripe-form-title {
+    margin: -22px -22px 18px;
   }
 
   .ventas-product-field {

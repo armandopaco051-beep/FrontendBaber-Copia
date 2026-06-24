@@ -34,15 +34,15 @@ export default function GrabadorVozReporte({ onResultado }) {
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => () => {
-    detenerStream();
-  }, []);
-
   const detenerStream = () => {
     if (!streamRef.current) return;
     streamRef.current.getTracks().forEach(track => track.stop());
     streamRef.current = null;
   };
+
+  useEffect(() => () => {
+    detenerStream();
+  }, []);
 
   const reiniciarEstado = () => {
     chunksRef.current = [];

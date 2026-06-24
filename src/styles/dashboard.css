@@ -11,6 +11,12 @@
   margin-bottom: 20px;
 }
 
+.dashboard-card-header.compact {
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 .dashboard-card-title,
 .dashboard-section-title {
   font-family: 'Sora', sans-serif;
@@ -50,6 +56,28 @@
 .dashboard-status-atencion {
   background: #dbeafe;
   color: #1d4ed8;
+}
+
+.dashboard-status-cancelada {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.dashboard-empty {
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+.dashboard-error {
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding: 12px 14px;
 }
 
 .dashboard-side {
@@ -112,6 +140,14 @@
   border-radius: 99px;
 }
 
-.dashboard-progress-48 { width: 48%; }
-.dashboard-progress-31 { width: 31%; }
-.dashboard-progress-21 { width: 21%; }
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-card-header,
+  .dashboard-card-header.compact {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

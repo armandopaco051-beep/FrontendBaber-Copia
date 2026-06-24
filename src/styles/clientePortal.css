@@ -322,6 +322,53 @@
   text-align: center;
 }
 
+.cliente-cita-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 210px;
+}
+
+.cliente-cita-actions .btn-gold,
+.cliente-cita-actions .btn-outline {
+  white-space: nowrap;
+}
+
+.cliente-pago-modal {
+  max-width: 980px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.cliente-pago-head {
+  margin-bottom: 12px;
+}
+
+.cliente-pago-store-note {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  padding: 14px;
+}
+
+.cliente-pago-store-note strong {
+  color: #0f172a;
+}
+
+.cliente-pago-store-note span {
+  color: #475569;
+  font-size: 13px;
+}
+
+.cliente-pago-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
 .cliente-history-list {
   display: grid;
   gap: 12px;
@@ -527,6 +574,17 @@
   }
 
   .cliente-profile-actions button {
+    width: 100%;
+  }
+
+  .cliente-cita-actions,
+  .cliente-pago-actions {
+    flex-direction: column;
+  }
+
+  .cliente-cita-actions .btn-gold,
+  .cliente-cita-actions .btn-outline,
+  .cliente-pago-actions .btn-outline {
     width: 100%;
   }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../api/axiosConfig';
 import { formatApiError } from '../../utils/apiError';
+import StripePaymentPortal from '../../components/StripePaymentPortal';
 
 const EMPTY_FORM = {
   codigo_cliente: '',
@@ -97,6 +98,10 @@ export default function Ventas() {
   const [loadingCita, setLoadingCita] = useState(false);
   const [form, setForm] = useState({ ...EMPTY_FORM, detalles: [{ ...EMPTY_DETALLE }] });
   const [pagos, setPagos] = useState([{ ...EMPTY_PAGO }]);
+  const [pagoModo, setPagoModo] = useState('manual');
+  const [stripeIntent, setStripeIntent] = useState(null);
+  const [stripeEstado, setStripeEstado] = useState('');
+  const [verificandoStripe, setVerificandoStripe] = useState(false);
   const [motivo, setMotivo] = useState('');
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -147,6 +152,10 @@ export default function Ventas() {
     setMotivo('');
     setCitaVenta(null);
     setPagos([{ ...EMPTY_PAGO }]);
+    setPagoModo('manual');
+    setStripeIntent(null);
+    setStripeEstado('');
+    setVerificandoStripe(false);
     setForm({ ...EMPTY_FORM, detalles: [{ ...EMPTY_DETALLE }] });
   };
 
@@ -177,6 +186,10 @@ export default function Ventas() {
   const abrirConfirmar = (venta) => {
     setVentaActual(venta);
     setPagos([{ ...EMPTY_PAGO, monto: venta?.total || '' }]);
+    setPagoModo('manual');
+    setStripeIntent(null);
+    setStripeEstado('');
+    setVerificandoStripe(false);
     setModal('confirmar');
   };
 
@@ -212,7 +225,7 @@ export default function Ventas() {
   const quitarPago = (index) => setPagos(actual => actual.filter((_, i) => i !== index));
 
   const crearVenta = async () => {
-    if (!form.codigo_cliente) return showToast('Selecciona un cliente.', 'error');
+    if (!form.codigo_cliente && !form.id_cita) return showToast('Selecciona un cliente o una cita.', 'error');
     if (!form.id_cita && form.detalles.length === 0) return showToast('Agrega al menos un detalle.', 'error');
 
     const detalles = form.detalles.map(detalle => {
@@ -241,10 +254,10 @@ export default function Ventas() {
     }
 
     const payload = {
-      codigo_cliente: form.codigo_cliente,
       descuento: form.descuento || '0.00',
       observacion: form.observacion,
     };
+    if (form.codigo_cliente) payload.codigo_cliente = form.codigo_cliente;
     if (form.id_cita) payload.id_cita = Number(form.id_cita);
     if (detalles.length > 0) payload.detalles = detalles;
 
@@ -289,6 +302,75 @@ export default function Ventas() {
       showToast(formatApiError(error.response?.data, 'No se pudo confirmar la venta.'), 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const mensajeErrorStripe = (error) => {
+    const texto = formatApiError(error.response?.data, 'No se pudo iniciar el pago con Stripe.');
+    if (texto.includes('STRIPE_SECRET_KEY')) return 'Stripe no esta configurado en el backend.';
+    if (texto.toLowerCase().includes('caja abierta')) return 'Primero debe abrir caja.';
+    return texto;
+  };
+
+  const crearIntentStripe = async () => {
+    const ventaId = idVenta(ventaActual);
+    const totalVenta = Number(ventaActual?.total || 0);
+
+    if (!ventaId) return showToast('No existe una venta para pagar.', 'error');
+    if (totalVenta <= 0) return showToast('No se puede pagar una venta con total cero.', 'error');
+
+    setLoading(true);
+    setStripeEstado('');
+    try {
+      const response = await api.post(`ventas-caja/ventas/${ventaId}/stripe/payment-intent/`, {});
+      const data = response.data || {};
+
+      if (!data.client_secret) {
+        throw new Error('No se pudo iniciar el pago con Stripe.');
+      }
+      if (data.venta?.estado !== 'PENDIENTE_PAGO') {
+        throw new Error('La venta no quedo pendiente de pago.');
+      }
+
+      setStripeIntent(data);
+      setVentaActual(actual => ({ ...actual, ...data.venta }));
+      setStripeEstado('Formulario de pago listo. Ingresa la tarjeta para continuar.');
+      showToast(data.mensaje || 'Intento de pago Stripe creado correctamente.');
+      await cargarVentas();
+    } catch (error) {
+      const mensaje = error.response ? mensajeErrorStripe(error) : error.message;
+      setStripeEstado(mensaje);
+      showToast(mensaje, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verificarVentaStripe = async () => {
+    const ventaId = idVenta(ventaActual);
+    if (!ventaId) return;
+
+    setVerificandoStripe(true);
+    try {
+      const response = await api.get(`ventas-caja/ventas/${ventaId}/`);
+      const venta = response.data?.venta || response.data;
+      setVentaActual(venta);
+      await cargarVentas();
+
+      if (venta?.estado === 'PAGADA') {
+        setStripeEstado('Pago confirmado por el servidor. Venta pagada.');
+        showToast('Pago Stripe confirmado correctamente.');
+        return;
+      }
+
+      setStripeEstado('Pago recibido, esperando confirmacion del servidor.');
+      showToast('Pago recibido, esperando confirmacion del servidor.');
+    } catch (error) {
+      const mensaje = formatApiError(error.response?.data, 'No se pudo verificar el estado de la venta.');
+      setStripeEstado(mensaje);
+      showToast(mensaje, 'error');
+    } finally {
+      setVerificandoStripe(false);
     }
   };
 
@@ -393,7 +475,7 @@ export default function Ventas() {
                   </div>
                 </td>
                 <td className="ventas-caja-row-actions">
-                  {venta.estado === 'BORRADOR' && <button className="btn-outline" onClick={() => abrirConfirmar(venta)}>Confirmar</button>}
+                  {['BORRADOR', 'PENDIENTE_PAGO'].includes(venta.estado) && <button className="btn-outline" onClick={() => abrirConfirmar(venta)}>Confirmar</button>}
                   {venta.estado !== 'ANULADA' && <button className="btn-outline ventas-caja-delete" onClick={() => abrirAnular(venta)}>Anular</button>}
                 </td>
               </tr>
@@ -553,45 +635,107 @@ export default function Ventas() {
 
       {modal === 'confirmar' && ventaActual && (
         <div className="modal-overlay" onClick={cerrar}>
-          <div className="modal-box ventas-caja-plan-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal-box ventas-caja-plan-modal ventas-pago-modal" onClick={e => e.stopPropagation()}>
             <h3>Confirmar venta #{idVenta(ventaActual)}</h3>
-            <p>Total a pagar: {dinero(ventaActual.total)}. La suma de pagos debe coincidir exactamente.</p>
+            <p>Total a pagar: {dinero(ventaActual.total)}. Selecciona cobro manual o pasarela de pago.</p>
 
             <div className="ventas-payment-summary">
               <span>Total venta: <strong>{dinero(ventaActual.total)}</strong></span>
-              <span>Total pagos: <strong>{dinero(totalPagos)}</strong></span>
+              <span>Estado: <strong>{ventaActual.estado || 'BORRADOR'}</strong></span>
             </div>
 
-            <div className="ventas-section-head">
-              <h4>Pagos</h4>
-              <button className="btn-outline" type="button" onClick={agregarPago}>Agregar pago</button>
+            <div className="ventas-pay-mode">
+              <button
+                className={pagoModo === 'manual' ? 'active' : ''}
+                type="button"
+                onClick={() => setPagoModo('manual')}
+                disabled={Boolean(stripeIntent)}
+              >
+                Efectivo / QR
+              </button>
+              <button
+                className={pagoModo === 'stripe' ? 'active' : ''}
+                type="button"
+                onClick={() => setPagoModo('stripe')}
+              >
+                Stripe
+              </button>
             </div>
 
-            {pagos.map((pago, index) => (
-              <div className="ventas-pago-row" key={index}>
-                <div className="form-group">
-                  <label>Metodo</label>
-                  <select className="input-field" value={pago.id_metodo_pago} onChange={e => actualizarPago(index, { id_metodo_pago: e.target.value })}>
-                    <option value="">Seleccionar metodo</option>
-                    {metodosPago.map(metodo => <option key={idMetodo(metodo)} value={idMetodo(metodo)}>{metodo.nombre}</option>)}
-                  </select>
+            {pagoModo === 'manual' && (
+              <>
+                <div className="ventas-payment-summary">
+                  <span>Total pagos: <strong>{dinero(totalPagos)}</strong></span>
+                  <span>Diferencia: <strong>{dinero(Number(ventaActual.total || 0) - totalPagos)}</strong></span>
                 </div>
-                <div className="form-group">
-                  <label>Monto</label>
-                  <input className="input-field" type="number" min="0" step="0.01" value={pago.monto} onChange={e => actualizarPago(index, { monto: e.target.value })} />
+
+                <div className="ventas-section-head">
+                  <h4>Pagos manuales</h4>
+                  <button className="btn-outline" type="button" onClick={agregarPago}>Agregar pago</button>
                 </div>
-                <div className="form-group">
-                  <label>Referencia</label>
-                  <input className="input-field" value={pago.referencia} onChange={e => actualizarPago(index, { referencia: e.target.value })} placeholder="QR-839201" />
+
+                {pagos.map((pago, index) => (
+                  <div className="ventas-pago-row" key={index}>
+                    <div className="form-group">
+                      <label>Metodo</label>
+                      <select className="input-field" value={pago.id_metodo_pago} onChange={e => actualizarPago(index, { id_metodo_pago: e.target.value })}>
+                        <option value="">Seleccionar metodo</option>
+                        {metodosPago.map(metodo => <option key={idMetodo(metodo)} value={idMetodo(metodo)}>{metodo.nombre}</option>)}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Monto</label>
+                      <input className="input-field" type="number" min="0" step="0.01" value={pago.monto} onChange={e => actualizarPago(index, { monto: e.target.value })} />
+                    </div>
+                    <div className="form-group">
+                      <label>Referencia</label>
+                      <input className="input-field" value={pago.referencia} onChange={e => actualizarPago(index, { referencia: e.target.value })} placeholder="QR-839201" />
+                    </div>
+                    {pagos.length > 1 && <button className="btn-outline ventas-caja-delete ventas-remove-payment" onClick={() => quitarPago(index)}>Quitar</button>}
+                  </div>
+                ))}
+
+                <div className="ventas-caja-modal-actions">
+                  <button className="btn-outline ventas-caja-modal-button" onClick={cerrar}>Cancelar</button>
+                  <button className="btn-gold ventas-caja-modal-button" onClick={confirmarVenta} disabled={loading}>{loading ? 'Confirmando...' : 'Confirmar pago'}</button>
                 </div>
-                {pagos.length > 1 && <button className="btn-outline ventas-caja-delete ventas-remove-payment" onClick={() => quitarPago(index)}>Quitar</button>}
+              </>
+            )}
+
+            {pagoModo === 'stripe' && (
+              <div className="ventas-stripe-flow">
+                {!stripeIntent && (
+                  <div className="ventas-stripe-start">
+                    <h4>Pasarela de pago</h4>
+                    <p>Se creara un intento de pago en Stripe por {dinero(ventaActual.total)}. Despues no llames confirmar manualmente; el backend terminara la venta con el webhook.</p>
+                    <button className="btn-gold" type="button" onClick={crearIntentStripe} disabled={loading}>
+                      {loading ? 'Iniciando...' : 'Iniciar pago Stripe'}
+                    </button>
+                  </div>
+                )}
+
+                {stripeIntent && (
+                  <StripePaymentPortal
+                    clientSecret={stripeIntent.client_secret}
+                    venta={ventaActual}
+                    totalTexto={`${dinero(ventaActual.total)} BOB`}
+                    onPagoProcesado={verificarVentaStripe}
+                    verificando={verificandoStripe}
+                  />
+                )}
+
+                {stripeEstado && <div className="ventas-stripe-status">{stripeEstado}</div>}
+
+                <div className="ventas-caja-modal-actions">
+                  <button className="btn-outline ventas-caja-modal-button" onClick={cerrar}>Cerrar</button>
+                  {stripeIntent && (
+                    <button className="btn-outline ventas-caja-modal-button" onClick={verificarVentaStripe} disabled={verificandoStripe}>
+                      {verificandoStripe ? 'Consultando...' : 'Reconsultar estado'}
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
-
-            <div className="ventas-caja-modal-actions">
-              <button className="btn-outline ventas-caja-modal-button" onClick={cerrar}>Cancelar</button>
-              <button className="btn-gold ventas-caja-modal-button" onClick={confirmarVenta} disabled={loading}>{loading ? 'Confirmando...' : 'Confirmar pago'}</button>
-            </div>
+            )}
           </div>
         </div>
       )}

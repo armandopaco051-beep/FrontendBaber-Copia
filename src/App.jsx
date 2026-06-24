@@ -28,6 +28,7 @@ import Reportes from './pages/admin/reportes';
 import Notificaciones from './pages/admin/notificaciones';
 import Productos from './pages/admin/productos';
 import Insumos from './pages/admin/insumos';
+import CategoriasInventario from './pages/admin/categoriasInventario';
 import Perfil      from './pages/admin/perfil';
 import Proximamente from './pages/admin/Proximamente';
 import ClienteLayout from './pages/cliente/ClienteLayout';
@@ -80,7 +81,7 @@ export default function App() {
             <Route path="pagos"       element={<Proximamente nombre="Pagos" />} />
             <Route path="inventario"  element={<Proximamente nombre="Inventario" />} />
             <Route path="atencion-servicios" element={<PermissionRoute permiso="atenciones.ver"><AtencionServicios /></PermissionRoute>} />
-            <Route path="categorias-inventario" element={<PermissionRoute permiso="inventario.ver"><Proximamente nombre="Gestionar categorias" /></PermissionRoute>} />
+            <Route path="categorias-inventario" element={<PermissionRoute permiso="inventario.ver"><CategoriasInventario /></PermissionRoute>} />
             <Route path="productos" element={<PermissionRoute permiso="inventario.ver"><Productos /></PermissionRoute>} />
             <Route path="insumos" element={<PermissionRoute permiso="inventario.ver"><Insumos /></PermissionRoute>} />
             <Route path="caja" element={<PermissionRoute permiso="caja.ver"><Caja /></PermissionRoute>} />
