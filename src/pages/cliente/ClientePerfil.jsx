@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../auth/authContext';
 import api from '../../api/axiosConfig';
 import { formatApiError } from './clienteUtils';
+import { mensajePasswordFuerte } from '../../utils/passwordValidation';
 
 const EMPTY_PERFIL = { codigo: '', nombre: '', apellido: '', telefono: '', correo: '', rol: 'cliente' };
 const EMPTY_PASSWORD = { password_actual: '', nueva_password: '', confirmar_password: '' };
@@ -74,6 +75,15 @@ export default function ClientePerfil() {
   const cambiarPassword = async () => {
     if (password.nueva_password !== password.confirmar_password) {
       setMensaje('La confirmacion no coincide.');
+      return;
+    }
+    if (password.nueva_password === password.password_actual) {
+      setMensaje('La nueva contrasena debe ser diferente de la actual.');
+      return;
+    }
+    const passwordError = mensajePasswordFuerte(password.nueva_password);
+    if (passwordError) {
+      setMensaje(passwordError);
       return;
     }
 

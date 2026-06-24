@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../auth/authContext';
+import { mensajePasswordFuerte } from '../../utils/passwordValidation';
 
 const EMPTY = { codigo: '', nombre: '', apellido: '', telefono: '', correo: '', password: '', id_rol: '' };
 
@@ -105,6 +106,10 @@ export default function Usuarios() {
   const guardar = async () => {
     if (modal === 'crear' && !puede('usuarios.crear')) return showToast('No tienes permiso para crear usuarios.', 'error');
     if (modal === 'editar' && !puede('usuarios.editar')) return showToast('No tienes permiso para editar usuarios.', 'error');
+    if (modal === 'crear' || form.password) {
+      const passwordError = mensajePasswordFuerte(form.password);
+      if (passwordError) return showToast(passwordError, 'error');
+    }
     setLoading(true);
     try {
       if (modal === 'crear') {

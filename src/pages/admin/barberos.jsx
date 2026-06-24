@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
+import { mensajePasswordFuerte } from '../../utils/passwordValidation';
 
 function Toast({ msg, type, onClose }) {
   useEffect(() => {
@@ -88,6 +89,10 @@ export default function Barberos() {
 
   // CREATE/UPDATE: POST al crear, PUT al editar por codigo.
   const guardar = async () => {
+    if (modal === 'crear' || form.password) {
+      const passwordError = mensajePasswordFuerte(form.password);
+      if (passwordError) return showToast(passwordError, 'error');
+    }
     setLoading(true);
     try {
       if (modal === 'crear') {

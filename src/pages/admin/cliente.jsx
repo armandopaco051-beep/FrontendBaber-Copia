@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
+import { mensajePasswordFuerte } from '../../utils/passwordValidation';
 
 function Toast({ msg, type, onClose }) {
   useEffect(() => {
@@ -68,6 +69,9 @@ export default function Clientes() {
 
   // CREATE: registra cliente sin enviar id_rol; el backend asigna Cliente.
   const guardarCliente = async () => {
+    const passwordError = mensajePasswordFuerte(form.password);
+    if (passwordError) return showToast(passwordError, 'error');
+
     setLoading(true);
 
     try {

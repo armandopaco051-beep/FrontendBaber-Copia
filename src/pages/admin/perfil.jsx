@@ -2,6 +2,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../auth/authContext';
+import { mensajePasswordFuerte } from '../../utils/passwordValidation';
 
 const EMPTY_PERFIL = { codigo: '', nombre: '', apellido: '', telefono: '', correo: '', rol: '' };
 const EMPTY_PASSWORD = { password_actual: '', nueva_password: '', confirmar_password: '' };
@@ -139,6 +140,11 @@ export default function Perfil() {
     if (passwordForm.nueva_password !== passwordForm.confirmar_password) {
       return showToast('La confirmacion no coincide', 'error');
     }
+    if (passwordForm.nueva_password === passwordForm.password_actual) {
+      return showToast('La nueva contrasena debe ser diferente de la actual', 'error');
+    }
+    const passwordError = mensajePasswordFuerte(passwordForm.nueva_password);
+    if (passwordError) return showToast(passwordError, 'error');
 
     setLoadingPassword(true);
 

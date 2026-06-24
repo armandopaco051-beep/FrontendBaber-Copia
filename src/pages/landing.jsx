@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
 import api from '../api/axiosConfig';
+import { mensajePasswordFuerte } from '../utils/passwordValidation';
 
 const PASSWORD_ENDPOINTS = {
   solicitar: 'seguridad/password/solicitar-codigo/',
@@ -95,6 +96,11 @@ export default function Landing() {
       setRegisterError('Las contrasenas no coinciden.');
       return;
     }
+    const passwordError = mensajePasswordFuerte(registerData.password);
+    if (passwordError) {
+      setRegisterError(passwordError);
+      return;
+    }
 
     setRegisterLoading(true);
     try {
@@ -166,6 +172,11 @@ export default function Landing() {
 
     if (recoverData.password !== recoverData.confirmar) {
       setRecoverError('Las contrasenas no coinciden.');
+      return;
+    }
+    const passwordError = mensajePasswordFuerte(recoverData.password);
+    if (passwordError) {
+      setRecoverError(passwordError);
       return;
     }
 
