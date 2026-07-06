@@ -945,3 +945,134 @@
     flex-direction: column;
   }
 }
+.reclamos-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.reclamos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.reclamos-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+}
+
+.reclamos-subtitle,
+.reclamos-detail-row span,
+.reclamos-detail-block span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.reclamos-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 170px 170px 170px;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.respuestas-toolbar {
+  grid-template-columns: minmax(260px, 1fr) 220px;
+}
+
+.reclamos-search {
+  margin-bottom: 0;
+  max-width: none;
+}
+
+.reclamos-table-wrap,
+.ventas-cuotas-table {
+  overflow-x: auto;
+}
+
+.reclamos-table-wrap .tabla {
+  min-width: 1050px;
+}
+
+.ventas-cuotas-table .tabla {
+  min-width: 920px;
+}
+
+.reclamos-name {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.reclamos-row-actions,
+.reclamos-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.reclamos-delete {
+  color: #b91c1c;
+}
+
+.reclamos-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 28px;
+}
+
+.reclamos-modal {
+  max-width: 820px;
+}
+
+.reclamos-textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.reclamos-modal-button {
+  flex: 1;
+}
+
+.reclamos-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.reclamos-detail-row,
+.reclamos-detail-block {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.reclamos-detail-row strong,
+.reclamos-detail-block strong {
+  display: block;
+  color: #0f172a;
+  margin-top: 4px;
+}
+
+.reclamos-detail-block {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 820px) {
+  .reclamos-stats,
+  .reclamos-toolbar,
+  .respuestas-toolbar,
+  .reclamos-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reclamos-header,
+  .reclamos-row-actions,
+  .reclamos-modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
