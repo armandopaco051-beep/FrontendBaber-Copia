@@ -588,3 +588,47 @@
     width: 100%;
   }
 }
+.cliente-reclamos-tools {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cliente-table-wrap {
+  overflow-x: auto;
+}
+
+.cliente-table-wrap .tabla {
+  min-width: 900px;
+}
+
+.cliente-reclamo-modal {
+  max-width: 760px;
+}
+
+.cliente-reclamo-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.cliente-reclamo-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.cliente-reclamo-actions button {
+  flex: 1;
+}
+
+@media (max-width: 720px) {
+  .cliente-reclamos-tools,
+  .cliente-reclamo-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .cliente-reclamo-actions {
+    flex-direction: column;
+  }
+}

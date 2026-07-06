@@ -10,17 +10,25 @@ import Usuarios    from './pages/admin/usuarios';
 import Roles       from './pages/admin/roles';
 import Barberos    from './pages/admin/barberos';
 import Clientes    from './pages/admin/cliente';
+import EncuestasSatisfaccion from './pages/admin/encuestasSatisfaccion';
+import ReclamosSugerencias from './pages/admin/reclamosSugerencias';
+import RespuestasReclamos from './pages/admin/respuestasReclamos';
 import Bitacora    from './pages/admin/bitacora';
 import Horarios    from './pages/admin/horarios';
 import Asistencia  from './pages/admin/asistencia';
 import Servicios   from './pages/admin/servicios';
+import PaquetesServicios from './pages/admin/paquetesServicios';
+import RecomendacionesCuidado from './pages/admin/recomendacionesCuidado';
 import AtencionServicios from './pages/admin/atencionServicios';
 import Citas       from './pages/admin/citas';
 import Promociones from './pages/admin/promociones';
 import DisponibilidadAdmin from './pages/admin/disponibilidad';
+import EstacionesTrabajo from './pages/admin/estacionesTrabajo';
+import AsignacionesEstaciones from './pages/admin/asignacionesEstaciones';
 import MetodosPago from './pages/admin/metodosPago';
 import PlanesComision from './pages/admin/planesComision';
 import Ventas from './pages/admin/ventas';
+import VentasCuotas from './pages/admin/ventasCuotas';
 import Caja from './pages/admin/caja';
 import MovimientosCaja from './pages/admin/movimientosCaja';
 import Comprobantes from './pages/admin/comprobantes';
@@ -39,6 +47,7 @@ import ClienteHistorial from './pages/cliente/ClienteHistorial';
 import ClientePromociones from './pages/cliente/ClientePromociones';
 import ClientePerfil from './pages/cliente/ClientePerfil';
 import ClienteSoporte from './pages/cliente/ClienteSoporte';
+import ClienteReclamosSugerencias from './pages/cliente/ClienteReclamosSugerencias';
 
 // App.jsx
 // Define las rutas del sistema. La landing es publica y el panel admin
@@ -48,7 +57,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Pública */}
+          {/* PÃºblica */}
           <Route path="/" element={<Landing />} />
 
           {/* Admin (protegidas con JWT) */}
@@ -67,15 +76,22 @@ export default function App() {
             {/* CU5 */}
             <Route path="barberos"    element={<PermissionRoute permiso="barberos.ver"><Barberos /></PermissionRoute>} />
             <Route path="clientes"    element={<PermissionRoute permiso="clientes.ver"><Clientes /></PermissionRoute>} />
+            <Route path="encuestas-satisfaccion" element={<PermissionRoute permiso="encuestas_satisfaccion.ver"><EncuestasSatisfaccion /></PermissionRoute>} />
+            <Route path="reclamos-sugerencias" element={<PermissionRoute permiso="reclamos_sugerencias.ver"><ReclamosSugerencias /></PermissionRoute>} />
+            <Route path="respuestas-reclamos" element={<PermissionRoute permiso="reclamos_sugerencias.responder"><RespuestasReclamos /></PermissionRoute>} />
             <Route path="bitacora"    element={<PermissionRoute permiso="bitacora.ver"><Bitacora /></PermissionRoute>} />
 
-            {/* Próximos ciclos */}
+            {/* PrÃ³ximos ciclos */}
             <Route path="servicios"   element={<PermissionRoute permiso="servicios.ver"><Servicios /></PermissionRoute>} />
+            <Route path="paquetes-servicios" element={<PermissionRoute permiso="paquetes_servicios.ver"><PaquetesServicios /></PermissionRoute>} />
+            <Route path="recomendaciones-cuidado" element={<PermissionRoute permiso="recomendaciones_cuidado.ver"><RecomendacionesCuidado /></PermissionRoute>} />
             <Route path="horarios"    element={<PermissionRoute permiso="horarios.ver"><Horarios /></PermissionRoute>} />
             <Route path="citas"       element={<PermissionRoute permiso="citas.ver"><Citas /></PermissionRoute>} />
             <Route path="asistencia"  element={<PermissionRoute permiso="asistencia.ver"><Asistencia /></PermissionRoute>} />
             <Route path="promociones" element={<PermissionRoute permiso="promociones.ver"><Promociones /></PermissionRoute>} />
             <Route path="disponibilidad" element={<DisponibilidadAdmin />} />
+            <Route path="estaciones-trabajo" element={<PermissionRoute permiso="estaciones_trabajo.ver"><EstacionesTrabajo /></PermissionRoute>} />
+            <Route path="asignaciones-estaciones" element={<PermissionRoute permiso="asignaciones_estaciones.ver"><AsignacionesEstaciones /></PermissionRoute>} />
             <Route path="metodos-pago" element={<PermissionRoute permiso="metodos_pago.ver"><MetodosPago /></PermissionRoute>} />
             <Route path="planes-comision" element={<PermissionRoute permiso="comisiones.ver"><PlanesComision /></PermissionRoute>} />
             <Route path="pagos"       element={<Proximamente nombre="Pagos" />} />
@@ -86,6 +102,7 @@ export default function App() {
             <Route path="insumos" element={<PermissionRoute permiso="inventario.ver"><Insumos /></PermissionRoute>} />
             <Route path="caja" element={<PermissionRoute permiso="caja.ver"><Caja /></PermissionRoute>} />
             <Route path="ventas" element={<PermissionRoute permiso="ventas.ver"><Ventas /></PermissionRoute>} />
+            <Route path="ventas-cuotas" element={<PermissionRoute permiso="ventas.ver"><VentasCuotas /></PermissionRoute>} />
             <Route path="movimientos-caja" element={<PermissionRoute permiso="caja.movimientos.ver"><MovimientosCaja /></PermissionRoute>} />
             <Route path="comprobantes" element={<PermissionRoute permiso="ventas.ver"><Comprobantes /></PermissionRoute>} />
             <Route path="notificaciones" element={<PermissionRoute permiso="notificaciones.ver"><Notificaciones /></PermissionRoute>} />
@@ -107,6 +124,7 @@ export default function App() {
             <Route path="promociones" element={<ClientePromociones />} />
             <Route path="perfil" element={<ClientePerfil />} />
             <Route path="soporte" element={<ClienteSoporte />} />
+            <Route path="reclamos-sugerencias" element={<ClienteReclamosSugerencias />} />
           </Route>
 
           {/* Cualquier ruta no encontrada */}

@@ -11,6 +11,7 @@ const NAV = [
   { path: '/cliente/promociones', label: 'Promociones', icon: 'PR' },
   { path: '/cliente/perfil', label: 'Perfil', icon: 'PF' },
   { path: '/cliente/soporte', label: 'Soporte', icon: 'SP' },
+  { path: '/cliente/reclamos-sugerencias', label: 'Reclamos y sugerencias', icon: 'RS' },
 ];
 
 // Layout del portal cliente.
