@@ -19,6 +19,8 @@ import Asistencia  from './pages/admin/asistencia';
 import Servicios   from './pages/admin/servicios';
 import PaquetesServicios from './pages/admin/paquetesServicios';
 import RecomendacionesCuidado from './pages/admin/recomendacionesCuidado';
+import DiagnosticosCapilares from './pages/admin/diagnosticosCapilares';
+import PortafolioTrabajos from './pages/admin/portafolioTrabajos';
 import AtencionServicios from './pages/admin/atencionServicios';
 import Citas       from './pages/admin/citas';
 import Promociones from './pages/admin/promociones';
@@ -29,6 +31,7 @@ import MetodosPago from './pages/admin/metodosPago';
 import PlanesComision from './pages/admin/planesComision';
 import Ventas from './pages/admin/ventas';
 import VentasCuotas from './pages/admin/ventasCuotas';
+import CampaniasFidelizacion from './pages/admin/campaniasFidelizacion';
 import Caja from './pages/admin/caja';
 import MovimientosCaja from './pages/admin/movimientosCaja';
 import Comprobantes from './pages/admin/comprobantes';
@@ -38,6 +41,7 @@ import Productos from './pages/admin/productos';
 import Insumos from './pages/admin/insumos';
 import CategoriasInventario from './pages/admin/categoriasInventario';
 import Perfil      from './pages/admin/perfil';
+import PermisosPersonal from './pages/admin/permisosPersonal';
 import Proximamente from './pages/admin/Proximamente';
 import ClienteLayout from './pages/cliente/ClienteLayout';
 import ClienteDashboard from './pages/cliente/ClienteDashboard';
@@ -48,6 +52,9 @@ import ClientePromociones from './pages/cliente/ClientePromociones';
 import ClientePerfil from './pages/cliente/ClientePerfil';
 import ClienteSoporte from './pages/cliente/ClienteSoporte';
 import ClienteReclamosSugerencias from './pages/cliente/ClienteReclamosSugerencias';
+import ClienteRecomendaciones from './pages/cliente/ClienteRecomendaciones';
+import ClienteBeneficiosFidelizacion from './pages/cliente/ClienteBeneficiosFidelizacion';
+import ClienteResponderEncuesta from './pages/cliente/ClienteResponderEncuesta';
 
 // App.jsx
 // Define las rutas del sistema. La landing es publica y el panel admin
@@ -75,6 +82,7 @@ export default function App() {
             <Route path="roles"       element={<PermissionRoute permiso="roles.ver"><Roles /></PermissionRoute>} />
             {/* CU5 */}
             <Route path="barberos"    element={<PermissionRoute permiso="barberos.ver"><Barberos /></PermissionRoute>} />
+            <Route path="permisos-personal" element={<PermissionRoute permiso="barberos.ver"><PermisosPersonal /></PermissionRoute>} />
             <Route path="clientes"    element={<PermissionRoute permiso="clientes.ver"><Clientes /></PermissionRoute>} />
             <Route path="encuestas-satisfaccion" element={<PermissionRoute permiso="encuestas_satisfaccion.ver"><EncuestasSatisfaccion /></PermissionRoute>} />
             <Route path="reclamos-sugerencias" element={<PermissionRoute permiso="reclamos_sugerencias.ver"><ReclamosSugerencias /></PermissionRoute>} />
@@ -85,6 +93,8 @@ export default function App() {
             <Route path="servicios"   element={<PermissionRoute permiso="servicios.ver"><Servicios /></PermissionRoute>} />
             <Route path="paquetes-servicios" element={<PermissionRoute permiso="paquetes_servicios.ver"><PaquetesServicios /></PermissionRoute>} />
             <Route path="recomendaciones-cuidado" element={<PermissionRoute permiso="recomendaciones_cuidado.ver"><RecomendacionesCuidado /></PermissionRoute>} />
+            <Route path="diagnosticos-capilares" element={<PermissionRoute permiso="atenciones.ver"><DiagnosticosCapilares /></PermissionRoute>} />
+            <Route path="portafolio-trabajos" element={<PermissionRoute permiso="servicios.ver"><PortafolioTrabajos /></PermissionRoute>} />
             <Route path="horarios"    element={<PermissionRoute permiso="horarios.ver"><Horarios /></PermissionRoute>} />
             <Route path="citas"       element={<PermissionRoute permiso="citas.ver"><Citas /></PermissionRoute>} />
             <Route path="asistencia"  element={<PermissionRoute permiso="asistencia.ver"><Asistencia /></PermissionRoute>} />
@@ -103,6 +113,7 @@ export default function App() {
             <Route path="caja" element={<PermissionRoute permiso="caja.ver"><Caja /></PermissionRoute>} />
             <Route path="ventas" element={<PermissionRoute permiso="ventas.ver"><Ventas /></PermissionRoute>} />
             <Route path="ventas-cuotas" element={<PermissionRoute permiso="ventas.ver"><VentasCuotas /></PermissionRoute>} />
+            <Route path="campanias-fidelizacion" element={<PermissionRoute permiso="ventas.ver"><CampaniasFidelizacion /></PermissionRoute>} />
             <Route path="movimientos-caja" element={<PermissionRoute permiso="caja.movimientos.ver"><MovimientosCaja /></PermissionRoute>} />
             <Route path="comprobantes" element={<PermissionRoute permiso="ventas.ver"><Comprobantes /></PermissionRoute>} />
             <Route path="notificaciones" element={<PermissionRoute permiso="notificaciones.ver"><Notificaciones /></PermissionRoute>} />
@@ -125,6 +136,9 @@ export default function App() {
             <Route path="perfil" element={<ClientePerfil />} />
             <Route path="soporte" element={<ClienteSoporte />} />
             <Route path="reclamos-sugerencias" element={<ClienteReclamosSugerencias />} />
+            <Route path="recomendaciones" element={<ClienteRecomendaciones />} />
+            <Route path="beneficios-fidelizacion" element={<ClienteBeneficiosFidelizacion />} />
+            <Route path="responder-encuesta" element={<ClienteResponderEncuesta />} />
           </Route>
 
           {/* Cualquier ruta no encontrada */}
