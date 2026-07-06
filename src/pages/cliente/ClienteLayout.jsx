@@ -12,6 +12,9 @@ const NAV = [
   { path: '/cliente/perfil', label: 'Perfil', icon: 'PF' },
   { path: '/cliente/soporte', label: 'Soporte', icon: 'SP' },
   { path: '/cliente/reclamos-sugerencias', label: 'Reclamos y sugerencias', icon: 'RS' },
+  { path: '/cliente/recomendaciones', label: 'Recomendaciones', icon: 'RE' },
+  { path: '/cliente/beneficios-fidelizacion', label: 'Beneficios', icon: 'BF' },
+  { path: '/cliente/responder-encuesta', label: 'Responder encuesta', icon: 'EN' },
 ];
 
 // Layout del portal cliente.
